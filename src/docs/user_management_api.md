@@ -90,57 +90,48 @@
     }
     ```
 
-## Testing Instructions for User Management API
+## 5. MFA Setup
+- **Endpoint**: `POST /api/users/mfa-setup`
+- **Description**: Initiates the MFA setup process by sending a verification code to the user.
+- **Request Body**:
+  ```json
+  {
+    "email": "john.doe@example.com"
+  }
+  ```
+- **Response**:
+  - **200 OK**: 
+    ```json
+    {
+      "message": "MFA setup initiated, verification code sent"
+    }
+    ```
 
-### User Registration
-1. Open Postman.
-2. Create a new request for the user registration endpoint.
-3. Set the request method to POST and enter the URL: `http://localhost:5000/api/users/register`.
-4. In the request body, select "raw" and set the type to "JSON" to input the following JSON data:
-   ```json
-   {
-     "name": "John Doe",
-     "email": "john.doe@example.com",
-     "password": "yourpassword"
-   }
-   ```
-5. Send the request and observe the response.
+## 6. MFA Verification
+- **Endpoint**: `POST /api/users/mfa-verify`
+- **Description**: Verifies the provided MFA code.
+- **Request Body**:
+  ```json
+  {
+    "email": "john.doe@example.com",
+    "code": "123456" // Replace with the actual code sent to the user
+  }
+  ```
+- **Response**:
+  - **200 OK**: 
+    ```json
+    {
+      "message": "MFA verification successful"
+    }
+    ```
+  - **400 Bad Request**: 
+    ```json
+    {
+      "message": "Invalid verification code"
+    }
+    ```
 
-### User Login
-1. Create a new request for the user login endpoint.
-2. Set the request method to POST and enter the URL: `http://localhost:5000/api/users/login`.
-3. In the request body, input the following JSON data:
-   ```json
-   {
-     "email": "john.doe@example.com",
-     "password": "yourpassword"
-   }
-   ```
-4. Send the request and observe the response.
-
-### MFA Setup
-1. Create a new request for the MFA setup endpoint.
-2. Set the request method to POST and enter the URL: `http://localhost:5000/api/users/mfa-setup`.
-3. In the request body, input the following JSON data:
-   ```json
-   {
-     "email": "john.doe@example.com"
-   }
-   ```
-4. Send the request and observe the response.
-
-### MFA Verification
-1. Create a new request for the MFA verification endpoint.
-2. Set the request method to POST and enter the URL: `http://localhost:5000/api/users/mfa-verify`.
-3. In the request body, input the following JSON data:
-   ```json
-   {
-     "email": "john.doe@example.com",
-     "code": "123456" // Replace with the actual code sent to the user
-   }
-   ```
-4. Send the request and observe the response.
-
+## Testing Instructions
 1. Open Postman.
 2. Create a new request for each endpoint listed above.
 3. Set the request method (GET, POST) and enter the URL (e.g., `http://localhost:5000/api/users/register`).
