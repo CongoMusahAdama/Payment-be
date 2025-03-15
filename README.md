@@ -11,6 +11,7 @@ This project is a backend application that provides user management and authenti
 - Mongoose
 - Nodemailer (for sending emails)
 - JWT (for authentication)
+- Swagger (for API documentation)
 
 ## Setup Instructions
 1. Clone the repository:
