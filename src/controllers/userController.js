@@ -1,4 +1,5 @@
-import userService from '../services/userService.js';
+import userService from '../services/userService.js'; // Import userService
+import { sendVerificationCode } from '../config/mfa.js'; 
 import { v4 as uuidv4 } from 'uuid';
 
 class UserController {
@@ -43,7 +44,7 @@ class UserController {
         res.status(200).json({ message: 'User logged out successfully' });
     }
 
-//MULTI-FACTOR AUTHENTICATION
+    // MULTI-FACTOR AUTHENTICATION
     async mfaSetup(req, res) {
         const { email } = req.body; // Assuming email is sent for MFA setup
         const verificationCode = Math.floor(100000 + Math.random() * 900000); // Generate a 6-digit code
@@ -52,10 +53,10 @@ class UserController {
         // For simplicity, we'll just log it here
         console.log(`MFA Code for ${email}: ${verificationCode}`);
 
-        // Here you would send the verification code to the user via email/SMS
+        // Send the verification code using the sendVerificationCode function
+        await sendVerificationCode(email, verificationCode);
         res.status(200).json({ message: 'MFA setup initiated, verification code sent' });
     }
-
 
     async mfaVerify(req, res) {
         const { email, code } = req.body; // Assuming email and code are sent for verification
@@ -69,7 +70,6 @@ class UserController {
             res.status(400).json({ message: 'Invalid verification code' });
         }
     }
-
 }
 
 export default new UserController();
