@@ -2,7 +2,7 @@
 # Project Title
 Money transfer App
 ## Description
-This project is a backend application that provides user management and authentication features, including Multi-Factor Authentication (MFA).
+Money Transfer application that enables users to securely send and receive funds. Your implementation should demonstrate robust architecture, clean code practices, secure data handling, and a responsive user interface that works across multiple devices.
 
 ## Tech Stack
 - Node.js
@@ -12,6 +12,8 @@ This project is a backend application that provides user management and authenti
 - Nodemailer (for sending emails)
 - JWT (for authentication)
 - Swagger (for API documentation)
+- Multer (for file upload)
+- Path (for path specification)
 
 ## Setup Instructions
 1. Clone the repository:
@@ -36,4 +38,4 @@ This project is a backend application that provides user management and authenti
    npm run dev
    ```
 
-6. Use Postman to test the API endpoints as described in the API documentation.
+6. Use Postman or Swagger UI to test the API endpoints as described in the API documentation.

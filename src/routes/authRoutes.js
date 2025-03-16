@@ -4,11 +4,10 @@ import authController from '../controllers/authController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
-//TODO: SWAGGER DOC
 
 /**
  * @swagger
- * /api/users/register:
+ * /api/auth/register:
  *   post:
  *     summary: User Registration
  *     description: Registers a new user.
@@ -19,17 +18,23 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               name:
+ *               Fullname:
  *                 type: string
  *               email:
  *                 type: string
  *               password:
  *                 type: string
+ *               address:
+ *                  type: string
+ *               phone: 
+ *                   type: string
  *     responses:
  *       201:
  *         description: User registered successfully
  *       400:
  *         description: User already exists
+ *     tags:
+ *       - Authentication
  */
 router.post('/register', authController.register);
 
@@ -37,7 +42,7 @@ router.post('/register', authController.register);
 
 /**
  * @swagger
- * /api/users/login:
+ * /api/auth/login:
  *   post:
  *     summary: User Login
  *     description: Authenticates a user and returns a token.
@@ -57,6 +62,8 @@ router.post('/register', authController.register);
  *         description: Successful login
  *       400:
  *         description: Invalid credentials
+ *     tags:
+ *       - Authentication
  */
 router.post('/login', authController.login);
 
@@ -64,7 +71,7 @@ router.post('/login', authController.login);
 
 /**
  * @swagger
- * /api/users/logout:
+ * /api/auth/logout:
  *   post:
  *     summary: User Logout
  *     description: Logs out the user and invalidates the token.
@@ -73,6 +80,8 @@ router.post('/login', authController.login);
  *     responses:
  *       200:
  *         description: User logged out successfully
+ *     tags:
+ *       - Authentication
  */
 router.post('/logout', authMiddleware, authController.logout);
 
@@ -81,7 +90,7 @@ router.post('/logout', authMiddleware, authController.logout);
 // Refresh Token
 /**
  * @swagger
- * /api/users/refresh-token:
+ * /api/auth/refresh-token:
  *   post:
  *     summary: Refresh Token
  *     description: Refreshes the authentication token.
@@ -99,6 +108,8 @@ router.post('/logout', authMiddleware, authController.logout);
  *         description: New token generated
  *       401:
  *         description: Refresh token is required
+ *    tags:
+ *       - Authentication
  */
 router.post('/refresh-token', authController.refreshToken);
 
@@ -106,7 +117,7 @@ router.post('/refresh-token', authController.refreshToken);
 
 /**
  * @swagger
- * /api/users/mfa-setup:
+ * /api/auth/mfa-setup:
  *   post:
  *     summary: MFA Setup
  *     description: Initiates the MFA setup process by sending a verification code to the user.
@@ -122,6 +133,9 @@ router.post('/refresh-token', authController.refreshToken);
  *     responses:
  *       200:
  *         description: MFA setup initiated, verification code sent
+ *     tags:
+ *       - Authentication
+ *     
  */
 router.post('/mfa-setup', authController.mfaSetup);
 
@@ -129,7 +143,7 @@ router.post('/mfa-setup', authController.mfaSetup);
 
 /**
  * @swagger
- * /api/users/mfa-verify:
+ * /api/auth/mfa-verify:
  *   post:
  *     summary: MFA Verification
  *     description: Verifies the provided MFA code.
@@ -149,6 +163,8 @@ router.post('/mfa-setup', authController.mfaSetup);
  *         description: MFA verification successful
  *       400:
  *         description: Invalid verification code
+ *     tags:
+ *       - Authentication 
  */
 router.post('/mfa-verify', authController.mfaVerify);
 
