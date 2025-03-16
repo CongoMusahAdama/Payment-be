@@ -9,14 +9,16 @@ class UserService {
 
     
     
-    async register(name, email, password) {
+async register(Fullname, email, password, phone, address) {
+
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             throw new Error('User already exists');
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ name, email, password: hashedPassword });
+    const newUser = new User({ Fullname, email, password: hashedPassword, phone, address });
+
         await newUser.save();
         return newUser;
     }

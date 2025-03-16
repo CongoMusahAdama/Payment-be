@@ -1,6 +1,7 @@
 import express from 'express';
 import connectDB from './src/config/db.js';
 import authRoutes from './src/routes/authRoutes.js';
+import userRoutes from './src/routes/userRoutes.js';
 import setupSwagger from './src/utils/swagger.js'; // Import Swagger setup
 
 
@@ -18,7 +19,9 @@ app.use(express.json());
 
 setupSwagger(app); // Setup Swagger documentation
 
-app.use('/api/users', authRoutes);
+//ROUTES
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 
 
