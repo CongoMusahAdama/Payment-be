@@ -1,14 +1,16 @@
 # User Management API Documentation
 
 ## 1. User Registration
-- **Endpoint**: `POST /api/users/register`
+- **Endpoint**: `POST /api/auth/register`
 - **Description**: Registers a new user.
 - **Request Body**:
   ```json
   {
-    "name": "John Doe",
+    "Fullname": "John Doe",
     "email": "john.doe@example.com",
-    "password": "yourpassword"
+    "password": "yourpassword",
+    "address": "St. francis 102",
+    "phone": "0531878243"
   }
   ```
 - **Response**:
@@ -31,7 +33,7 @@
     ```
 
 ## 2. User Login
-- **Endpoint**: `POST /api/users/login`
+- **Endpoint**: `POST /api/auth/login`
 - **Description**: Authenticates a user and returns a token.
 - **Request Body**:
   ```json
@@ -56,7 +58,7 @@
     ```
 
 ## 3. Refresh Token
-- **Endpoint**: `POST /api/users/refresh-token`
+- **Endpoint**: `POST /api/auth/refresh-token`
 - **Description**: Refreshes the authentication token.
 - **Request Body**:
   ```json
@@ -79,7 +81,7 @@
     ```
 
 ## 4. User Logout
-- **Endpoint**: `POST /api/users/logout`
+- **Endpoint**: `POST /api/auth/logout`
 - **Description**: Logs out the user and invalidates the token.
 - **Request Body**: (No body required)
 - **Response**:
@@ -91,7 +93,7 @@
     ```
 
 ## 5. MFA Setup
-- **Endpoint**: `POST /api/users/mfa-setup`
+- **Endpoint**: `POST /api/auth/mfa-setup`
 - **Description**: Initiates the MFA setup process by sending a verification code to the user.
 - **Request Body**:
   ```json
@@ -108,7 +110,7 @@
     ```
 
 ## 6. MFA Verification
-- **Endpoint**: `POST /api/users/mfa-verify`
+- **Endpoint**: `POST /api/auth/mfa-verify`
 - **Description**: Verifies the provided MFA code.
 - **Request Body**:
   ```json

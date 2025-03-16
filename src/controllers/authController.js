@@ -5,15 +5,17 @@ import { v4 as uuidv4 } from 'uuid';
 class UserController {
     
     async register(req, res) {
-        const { name, email, password } = req.body;
+        const { Fullname, email, password, phone, address } = req.body;
+    
         try {
-            const newUser = await authService.register(name, email, password);
-
+            const newUser = await authService.register(Fullname, email, password, phone, address); // Pass all fields
+    
             res.status(201).json({ message: 'User registered successfully', user: newUser });
         } catch (error) {
             res.status(400).json({ message: error.message });
         }
     }
+    
 
     async login(req, res) {
         const { email, password } = req.body;
