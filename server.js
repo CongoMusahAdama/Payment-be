@@ -2,7 +2,8 @@ import express from 'express';
 import connectDB from './src/config/db.js';
 import authRoutes from './src/routes/authRoutes.js';
 import userRoutes from './src/routes/userRoutes.js';
-import setupSwagger from './src/utils/swagger.js'; // Import Swagger setup
+import setupSwagger from './src/utils/swagger.js'; 
+import transactionRoutes from "./src/routes/transactionRoutes.js";
 
 
 const app = express();
@@ -22,6 +23,7 @@ setupSwagger(app); // Setup Swagger documentation
 //ROUTES
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use("/api/transactions", transactionRoutes);
 
 
 
