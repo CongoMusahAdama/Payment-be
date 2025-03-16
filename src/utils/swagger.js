@@ -22,6 +22,10 @@ const swaggerOptions = {
             {
                 name: 'User Profile Management',
                 description: 'User profile operations',
+            },
+            {
+                name: 'Money Transfer Management',
+                description: 'Money transfer operations',
             }
         ],
 
