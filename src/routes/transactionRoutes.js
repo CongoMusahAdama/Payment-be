@@ -1,5 +1,5 @@
 import express from "express";
-import { transferFunds, requestMoney } from "../controllers/transactionController.js";
+import { transferFunds, requestMoney, getTransactionHistory } from "../controllers/transactionController.js";
 import authMiddleware from "../middleware/authMiddleware.js"; 
 
 const router = express.Router();
@@ -87,5 +87,43 @@ router.post("/transfer", authMiddleware, transferFunds);
  *           }
  */
 router.post("/request-money", authMiddleware, requestMoney);
+
+
+/**
+ * @swagger
+ * /api/transactions/history:
+ *   get:
+ *     tags: [Money Transfer Management]
+ *     summary: Get transaction history
+ *     description: Retrieves the transaction history for the authenticated user.
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved transaction history.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             transactions:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     description: Transaction ID
+ *                   amount:
+ *                     type: number
+ *                     description: Amount of the transaction
+ *                   date:
+ *                     type: string
+ *                     format: date-time
+ *                     description: Date of the transaction
+ *                   status:
+ *                     type: string
+ *                     description: Status of the transaction
+ *       400:
+ *         description: Invalid request.
+ */
+router.get("/history", authMiddleware, getTransactionHistory);
+
 
 export default router;

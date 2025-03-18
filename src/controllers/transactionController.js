@@ -1,4 +1,4 @@
-import { transferFundsService, requestMoneyService } from "../services/transactionService.js";
+import { transferFundsService, requestMoneyService, getUserTransactions } from "../services/transactionService.js";
 import mongoose from "mongoose"; // Import mongoose for ObjectId validation
 
 
@@ -38,3 +38,18 @@ export const requestMoney = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+// ✅ Retrieve User Transaction History
+export const getTransactionHistory = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const filters = req.query; // Extract filters from request
+
+    const transactions = await getUserTransactions(userId, filters);
+
+    res.status(200).json({ message: "Transaction history retrieved", transactions });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+

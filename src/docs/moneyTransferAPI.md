@@ -66,3 +66,43 @@ http://localhost:5000/api/transactions
     "reference": "REQ-1710874456789"
   }
 }
+```
+
+---
+
+### 📌 Test Get Transaction History
+- **Request:** `GET /api/transactions/history`
+- **Query Parameters:**
+  - `startDate`: The start date for filtering transactions (format: YYYY-MM-DD).
+  - `endDate`: The end date for filtering transactions (format: YYYY-MM-DD).
+  - `transactionType`: The type of transaction to filter (e.g., "transfer").
+
+#### Example Request:
+```
+GET /api/transactions/history?startDate=2024-03-01&endDate=2024-03-14&transactionType=transfer
+```
+
+#### ✅ Expected Response (Success):
+```json
+{
+  "message": "Transaction history retrieved",
+  "transactions": [
+    {
+      "_id": "65bcf59f123456789abcdef0",
+      "sender": "65bcf59f123456789abcdef1",
+      "recipient": "65bcf59f123456789abcdef2",
+      "amount": 100,
+      "transactionType": "transfer",
+      "status": "completed",
+      "reference": "TXN-1710874456789",
+      "createdAt": "2024-03-14T12:00:00Z"
+    }
+  ]
+}
+```
+
+#### 🔴 If there are no transactions found, it should return:
+```json
+{
+  "message": "No transactions found for the specified criteria"
+}
