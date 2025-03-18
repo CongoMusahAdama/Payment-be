@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors'; // Import CORS
 import connectDB from './src/config/db.js';
 import authRoutes from './src/routes/authRoutes.js';
 import userRoutes from './src/routes/userRoutes.js';
@@ -7,6 +8,10 @@ import transactionRoutes from "./src/routes/transactionRoutes.js";
 import paymentRoutes from "./src/routes/paymentRoutes.js"
 import reportRoutes from "./src/routes/reportRoutes.js"
 const app = express();
+
+// Use CORS middleware
+app.use(cors()); // Enable CORS for all routes
+
 
 // Connect to the database
 connectDB();
