@@ -14,6 +14,7 @@ http://localhost:5000/api/transactions
 ```json
 {
   "recipientId": "65bcf59f123456789abcdef1",
+  "senderId": "65bcf59f123456789abcdef1",
   "amount": 50
 }
 ```
