@@ -1,7 +1,10 @@
 import authService from '../services/authService.js'; 
 import { sendVerificationCode } from '../config/mfa.js'; 
 import { v4 as uuidv4 } from 'uuid';
+
 import redisClient from '../config/redisClient.js';
+
+
 
 
 class UserController {
@@ -51,6 +54,7 @@ class UserController {
         res.status(200).json({ message: 'User logged out successfully' });
     }
 
+
    // MULTI-FACTOR AUTHENTICATION
       // Step 1: Send OTP via Email
       async mfaSetup(req, res) {
@@ -94,6 +98,8 @@ class UserController {
       }
     }
     
+
+
 
 
 
