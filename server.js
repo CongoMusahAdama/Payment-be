@@ -4,7 +4,7 @@ import authRoutes from './src/routes/authRoutes.js';
 import userRoutes from './src/routes/userRoutes.js';
 import setupSwagger from './src/utils/swagger.js'; 
 import transactionRoutes from "./src/routes/transactionRoutes.js";
-
+import paymentRoutes from "./src/routes/paymentRoutes.js"
 
 const app = express();
 
@@ -24,6 +24,7 @@ setupSwagger(app); // Setup Swagger documentation
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use("/api/transactions", transactionRoutes);
+app.use('/api/payments', paymentRoutes)
 
 
 
