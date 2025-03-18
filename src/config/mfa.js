@@ -1,7 +1,14 @@
+
 import SibApiV3Sdk from "sib-api-v3-sdk";
 import dotenv from "dotenv";
 
 dotenv.config();
+import SibApiV3Sdk from "sib-api-v3-sdk";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+
 
 // Initialize Brevo API client
 const defaultClient = SibApiV3Sdk.ApiClient.instance;
