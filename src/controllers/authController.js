@@ -1,6 +1,8 @@
 import authService from '../services/authService.js'; 
 import { sendVerificationCode } from '../config/mfa.js'; 
 import { v4 as uuidv4 } from 'uuid';
+import redisClient from '../config/redisClient.js';
+
 
 class UserController {
     
@@ -49,32 +51,50 @@ class UserController {
         res.status(200).json({ message: 'User logged out successfully' });
     }
 
-    // MULTI-FACTOR AUTHENTICATION
-    async mfaSetup(req, res) {
-        const { email } = req.body; // Assuming email is sent for MFA setup
-        const verificationCode = Math.floor(100000 + Math.random() * 900000); // Generate a 6-digit code
-
-        // Store the verification code temporarily (in-memory or database)
-        // For simplicity, we'll just log it here
-        console.log(`MFA Code for ${email}: ${verificationCode}`);
-
-        // Send the verification code using the sendVerificationCode function
-        await sendVerificationCode(email, verificationCode);
-        res.status(200).json({ message: 'MFA setup initiated, verification code sent' });
-    }
-
-    async mfaVerify(req, res) {
-        const { email, code } = req.body; // Assuming email and code are sent for verification
-
-        // Logic to verify the code (this should check against the stored code)
-        // For simplicity, we'll assume the code is always correct
-        // In a real implementation, you would compare the provided code with the stored one
-        if (code === '123456') { // Replace with actual verification logic
-            res.status(200).json({ message: 'MFA verification successful' });
-        } else {
-            res.status(400).json({ message: 'Invalid verification code' });
+   // MULTI-FACTOR AUTHENTICATION
+      // Step 1: Send OTP via Email
+      async mfaSetup(req, res) {
+        const { email } = req.body;
+    
+        if (!email) {
+          return res.status(400).json({ message: "Email is required" });
         }
+    
+        const verificationCode = Math.floor(100000 + Math.random() * 900000); // Generate a 6-digit OTP
+    
+        // Store OTP in Redis (expires in 5 minutes)
+        await redisClient.setEx(`mfa_${email}`, 300, verificationCode.toString()); 
+
+    
+        // Send OTP via email
+        await sendVerificationCode(email, verificationCode);
+    
+        res.status(200).json({ message: "MFA setup initiated, verification code sent" });
+      }
+    
+      // Step 2: Verify OTP
+      async mfaVerify(req, res) {
+        const { email, code } = req.body;
+    
+        if (!email || !code) {
+          return res.status(400).json({ message: "Email and verification code are required" });
+        }
+    
+        // Retrieve stored OTP from Redis
+        const storedCode = await redisClient.get(`mfa_${email}`);
+    
+        if (!storedCode || storedCode !== code) {
+          return res.status(400).json({ message: "Invalid or expired verification code" });
+        }
+    
+        // OTP is correct - delete from Redis (so it can't be reused)
+        await redisClient.del(`mfa_${email}`);
+    
+        res.status(200).json({ message: "MFA verification successful" });
+      }
     }
-}
+    
+
+
 
 export default new UserController();
