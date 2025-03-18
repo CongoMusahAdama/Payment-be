@@ -14,7 +14,7 @@ Money Transfer application that enables users to securely send and receive funds
 - Swagger (for API documentation)
 - Multer (for file upload)
 - Path (for path specification)
--Paystack (for payment integration)
+- Paystack (for payment integration)
 
 ## Setup Instructions
 1. Clone the repository:

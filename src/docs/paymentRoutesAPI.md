@@ -71,3 +71,30 @@
     {
       "message": "<error_message>"
     }
+    ```
+
+## 4. Webhook
+- **Endpoint:** `POST /api/payments/webhook`
+- **Description:** Handles webhook notifications from Paystack for payment status updates.
+- **Request Body:**
+```json
+{
+  "event": "<event_type>", // Type of the event (e.g., charge.success)
+  "data": {
+    "reference": "<payment_reference>" // Reference of the payment
+    // Additional data depending on the event type
+  }
+}
+```
+- **Response:**
+  - **Success (200):**
+    ```json
+    {
+      "message": "Webhook processed successfully"
+    }
+    ```
+  - **Error (400):**
+    ```json
+    {
+      "message": "Invalid webhook payload"
+    }

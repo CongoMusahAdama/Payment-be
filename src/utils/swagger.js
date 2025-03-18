@@ -26,7 +26,11 @@ const swaggerOptions = {
             {
                 name: 'Money Transfer Management',
                 description: 'Money transfer operations',
-            }
+            },
+            {
+                name: 'Payment Management',
+                description: 'Payment operations',
+            },
         ],
 
         components: {
@@ -87,6 +91,109 @@ const swaggerOptions = {
                                 type: 'string',
                                 description: 'Payment IDs associated with the user',
                             },
+                        },
+                    },
+                },
+                MoneyRequest: {
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            description: 'The ID of the money request',
+                        },
+                        amount: {
+                            type: 'number',
+                            description: 'The amount requested',
+                        },
+                        status: {
+                            type: 'string',
+                            description: 'The status of the request',
+                        },
+                    },
+                },
+                Payment: {
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            description: 'The ID of the payment',
+                        },
+                        amount: {
+                            type: 'number',
+                            description: 'The amount of the payment',
+                        },
+                        currency: {
+                            type: 'string',
+                            description: 'The currency of the payment',
+                        },
+                        status: {
+                            type: 'string',
+                            description: 'The status of the payment',
+                        },
+                    },
+                },
+                Transaction: {
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            description: 'The ID of the transaction',
+                        },
+                        amount: {
+                            type: 'number',
+                            description: 'The amount of the transaction',
+                        },
+                        type: {
+                            type: 'string',
+                            description: 'The type of transaction (e.g., deposit, withdrawal)',
+                        },
+                        date: {
+                            type: 'string',
+                            format: 'date-time',
+                            description: 'The date of the transaction',
+                        },
+                    },
+                },
+                Wallet: {
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            description: 'The ID of the wallet',
+                        },
+                        balance: {
+                            type: 'number',
+                            description: 'The current balance of the wallet',
+                        },
+                        currency: {
+                            type: 'string',
+                            description: 'The currency of the wallet',
+                        },
+                    },
+                },
+                DepositRequest: {
+                    type: 'object',
+                    properties: {
+                        amount: {
+                            type: 'number',
+                            description: 'The amount to deposit',
+                        },
+                        currency: {
+                            type: 'string',
+                            description: 'The currency of the deposit',
+                        },
+                    },
+                },
+                WithdrawRequest: {
+                    type: 'object',
+                    properties: {
+                        amount: {
+                            type: 'number',
+                            description: 'The amount to withdraw',
+                        },
+                        currency: {
+                            type: 'string',
+                            description: 'The currency of the withdrawal',
                         },
                     },
                 },

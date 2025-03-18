@@ -2,6 +2,23 @@ import { initializePayment, verifyPayment, processWithdrawal } from "../config/p
 import Payment from "../models/payment.js";
 import Wallet from "../models/wallet.js";
 
+// Handle Paystack Webhook
+export const handleWebhook = async (event) => {
+  if (event.event === "charge.success") {
+    const payment = await Payment.findOne({ reference: event.data.reference });
+    if (payment) {
+      payment.status = "successful";
+      await payment.save();
+
+      // Optionally, credit the user's wallet here
+      const wallet = await Wallet.findOne({ user: payment.user });
+      wallet.balance += payment.amount;
+      await wallet.save();
+    }
+  }
+};
+
+
 // Initialize Deposit Payment
 export const initiateDeposit = async (user, amount) => {
   const callbackUrl = "http://localhost:3000/payment-success"; // Update this in production

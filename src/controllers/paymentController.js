@@ -24,7 +24,32 @@ export const verifyDeposit = async (req, res) => {
   }
 };
 
-//  Initiate Withdrawal
+export const handleWebhook = async (req, res) => {
+  try {
+    const event = req.body; // Get the webhook event from the request body
+
+    // Check the event type
+    if (event.event === "charge.success") {
+      const payment = await Payment.findOne({ reference: event.data.reference });
+      if (payment) {
+        payment.status = "successful";
+        await payment.save();
+
+        // Optionally, credit the user's wallet here
+        const wallet = await Wallet.findOne({ user: payment.user });
+        wallet.balance += payment.amount;
+        await wallet.save();
+      }
+    }
+
+    res.status(200).json({ message: "Webhook processed successfully" });
+  } catch (error) {
+    console.error("Webhook handling error:", error);
+    res.status(400).json({ message: "Invalid webhook payload" });
+  }
+};
+
+
 export const withdrawFunds = async (req, res) => {
   try {
     const { recipientCode, amount } = req.body;

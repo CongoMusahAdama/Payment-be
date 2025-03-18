@@ -5,13 +5,6 @@ import { v4 as uuidv4 } from 'uuid';
 import redisClient from '../config/redisClient.js';
 
 
-
-import redisClient from '../config/redisClient.js';
-
-
-
-
-
 class UserController {
     
     async register(req, res) {

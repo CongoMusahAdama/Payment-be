@@ -6,7 +6,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /transfer:
+ * /api/transactions/transfer:
  *   post:
  *     tags: [Money Transfer Management]
  *     summary: Secure fund transfer
@@ -48,7 +48,7 @@ router.post("/transfer", authMiddleware, transferFunds);
 
 /**
  * @swagger
- * /request-money:
+ * /api/transactions/request-money:
  *   post:
  *     tags: [Money Transfer Management]
  *     summary: Request money from another user
