@@ -1,13 +1,22 @@
 import User from "../models/user.js";
 import Transaction from "../models/transaction.js";
 import Wallet from "../models/wallet.js";
+import mongoose from "mongoose"; 
+
+ 
+
 
 // ✅ Secure Fund Transfer
 export const transferFundsService = async (senderId, recipientId, amount) => {
   if (amount <= 0) throw new Error("Transfer amount must be greater than zero");
 
+  console.log("Sender ID:", senderId);
+  console.log("Recipient ID:", recipientId);
   const senderWallet = await Wallet.findOne({ user: senderId });
-  const recipientWallet = await Wallet.findOne({ user: recipientId });
+
+  const recipientWallet = await Wallet.findOne({ user: new mongoose.Types.ObjectId(recipientId) });
+
+
 
   if (!senderWallet || !recipientWallet) throw new Error("Wallet not found");
   if (senderWallet.balance < amount) throw new Error("Insufficient funds");
@@ -22,8 +31,11 @@ export const transferFundsService = async (senderId, recipientId, amount) => {
 
   // Create transaction record
   const transaction = new Transaction({
+    recipient: mongoose.Types.ObjectId(recipientId), // Ensure recipientId is an ObjectId
+
     sender: senderId,
-    recipient: recipientId,
+    recipient: mongoose.Types.ObjectId(recipientId), // Ensure recipientId is an ObjectId
+
     transactionType: "transfer",
     amount,
     status: "completed",
