@@ -64,3 +64,21 @@ export const requestMoneyService = async (requesterId, recipientId, amount, note
   await moneyRequest.save();
   return moneyRequest;
 };
+
+
+// ✅ Get User Transaction History with Filters
+export const getUserTransactions = async (userId, filters) => {
+  const query = { $or: [{ sender: userId }, { recipient: userId }] };
+
+  // Apply filters
+  if (filters.startDate && filters.endDate) {
+    query.createdAt = { $gte: new Date(filters.startDate), $lte: new Date(filters.endDate) };
+  }
+  if (filters.transactionType) {
+    query.transactionType = filters.transactionType;
+  }
+
+  const transactions = await Transaction.find(query).sort({ createdAt: -1 }); // Latest first
+  return transactions;
+};
+
