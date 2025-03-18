@@ -15,6 +15,7 @@ Money Transfer application that enables users to securely send and receive funds
 - Multer (for file upload)
 - Path (for path specification)
 - Paystack (for payment integration)
+- pdfkit and json2csv (for report downloading )
 
 ## Setup Instructions
 1. Clone the repository:
