@@ -1,17 +1,39 @@
-import sgMail from '@sendgrid/mail';
 
-//TODO: signup and generate the api key
-// Set the SendGrid API key
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+import SibApiV3Sdk from "sib-api-v3-sdk";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+// Initialize Brevo API client
+const defaultClient = SibApiV3Sdk.ApiClient.instance;
+const apiKey = defaultClient.authentications["api-key"];
+apiKey.apiKey = process.env.BREVO_API_KEY;
+
+
+
+const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+
 
 // Function to send verification code
 export const sendVerificationCode = async (email, verificationCode) => {
-    const msg = {
-        to: email,
-        from: process.env.EMAIL_USER, // Your verified SendGrid email
-        subject: 'Your MFA Verification Code',
-        text: `Your verification code is: ${verificationCode}`,
-    };
+  const sender = { email: process.env.EMAIL_USER, name: "Your App Name" };
+  const receivers = [{ email }];
 
-    return sgMail.send(msg);
-};
+  const emailContent = {
+    sender,
+    to: receivers,
+    subject: "Your MFA Verification Code",
+    htmlContent: `<p>Your One-Time Password (OTP) is: <strong>${verificationCode}</strong></p>`,
+  };
+
+  try {
+    console.log("Sending email to:", email); // Log the email being sent
+    await apiInstance.sendTransacEmail(emailContent);
+    console.log(`MFA Code sent to ${email}`);
+  } catch (error) {
+    console.error("Error sending MFA email:", error.response ? error.response.body : error.message);
+
+    throw new Error("Failed to send MFA email");
+  }
+
+
