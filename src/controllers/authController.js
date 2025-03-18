@@ -1,10 +1,13 @@
 import authService from '../services/authService.js'; 
 import { sendVerificationCode } from '../config/mfa.js'; 
 import { v4 as uuidv4 } from 'uuid';
+
 import redisClient from '../config/redisClient.js';
 
 
+
 import redisClient from '../config/redisClient.js';
+
 
 
 
@@ -55,6 +58,7 @@ class UserController {
         // Logic to handle user logout
         res.status(200).json({ message: 'User logged out successfully' });
     }
+
 
    // MULTI-FACTOR AUTHENTICATION
       // Step 1: Send OTP via Email

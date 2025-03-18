@@ -41,4 +41,5 @@ export const sendVerificationCode = async (email, verificationCode) => {
 
     throw new Error("Failed to send MFA email");
   }
-};
+
+
