@@ -22,6 +22,9 @@ const router = express.Router();
  *             amount:
  *               type: number
  *               description: Amount to transfer.
+ *             sendersId:
+ *               type: string
+ *               decsription: ID of the sender
  *             recipientId:
  *               type: string
  *               description: ID of the recipient.
@@ -61,9 +64,12 @@ router.post("/transfer", authMiddleware, transferFunds);
  *             amount:
  *               type: number
  *               description: Amount requested.
- *             requesterId:
+ *             recipientId:
  *               type: string
  *               description: ID of the requester.
+ *             note:
+ *                type: string
+ *                description: any other thing
  *     responses:
  *       200:
  *         description: Request sent successfully.
