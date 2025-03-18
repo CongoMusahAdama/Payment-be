@@ -1,3 +1,4 @@
+
 import SibApiV3Sdk from "sib-api-v3-sdk";
 import dotenv from "dotenv";
 
@@ -34,4 +35,5 @@ export const sendVerificationCode = async (email, verificationCode) => {
 
     throw new Error("Failed to send MFA email");
   }
-};
+
+
