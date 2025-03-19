@@ -28,10 +28,14 @@ export const transferFunds = async (req, res) => {
 // ✅ Handle Money Requests
 export const requestMoney = async (req, res) => {
   try {
-    const { recipientId, amount, note } = req.body;
-    const requesterId = req.user._id;
+    const { recipientId, requesterId, amount, note } = req.body; 
 
-    const moneyRequest = await requestMoneyService(requesterId, recipientId, amount, note);
+
+    //const requesterId = req.user._id;
+
+    const moneyRequest = await requestMoneyService(requesterId, recipientId, amount, note); 
+
+
 
     res.status(200).json({ message: "Money request sent", request: moneyRequest });
   } catch (error) {
@@ -52,4 +56,3 @@ export const getTransactionHistory = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
-

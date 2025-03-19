@@ -1,60 +1,99 @@
-import { initiateDeposit, confirmDeposit, initiateWithdrawal } from "../services/paymentService.js";
+import { initiateDeposit, confirmDeposit, initiateWithdrawal, handleWebhook } from "../services/paymentService.js";
+import User from "../models/user.js";
+import crypto from "crypto";
 
-// Initiate Deposit
+/**
+ * Deposit Funds
+ */
 export const depositFunds = async (req, res) => {
   try {
-    const { amount } = req.body;
-    const paymentLink = await initiateDeposit(req.user, amount);
+      console.log("📌 Received deposit request:", req.body);
+      
+      const { amount } = req.body;
+      const user = req.user;
 
-    res.status(200).json({ message: "Payment initiated", paymentLink });
+      console.log("📌 Authenticated user:", user);
+
+      if (!user || !user.email) {
+          console.error("🚨 Error: User email is missing in depositFunds");
+          return res.status(400).json({ message: "User email is required for payment" });
+      }
+
+      const { reference, authorizationUrl } = await initiateDeposit(user, amount);
+
+      return res.status(200).json({
+          message: "Deposit initiated successfully",
+          reference,
+          authorizationUrl, // This is where the user should be redirected
+      });
+
   } catch (error) {
-    res.status(400).json({ message: error.message });
+      console.error("🚨 Error processing deposit:", error);
+      return res.status(500).json({ message: "Deposit failed" });
   }
 };
 
-// Verify Deposit
+
+/**
+ * Verify Deposit
+ */
 export const verifyDeposit = async (req, res) => {
   try {
     const { reference } = req.query;
-    const payment = await confirmDeposit(reference);
+    if (!reference) throw new Error("Reference is required");
 
+    const payment = await confirmDeposit(reference);
     res.status(200).json({ message: "Payment verified", payment });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
 
-export const handleWebhook = async (req, res) => {
+/**
+ * Handle Paystack Webhook
+ */
+export const handleWebhookController = async (req, res) => {
+
   try {
-    const event = req.body; // Get the webhook event from the request body
+    const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY; // Load secret key from env
+    const paystackSignature = req.headers["x-paystack-signature"]; // Extract signature
+    const requestBody = JSON.stringify(req.body); // Get raw request body
 
-    // Check the event type
-    if (event.event === "charge.success") {
-      const payment = await Payment.findOne({ reference: event.data.reference });
-      if (payment) {
-        payment.status = "successful";
-        await payment.save();
+    // ✅ Compute the expected signature
+    const expectedSignature = crypto
+      .createHmac("sha512", paystackSecretKey)
+      .update(requestBody)
+      .digest("hex");
 
-        // Optionally, credit the user's wallet here
-        const wallet = await Wallet.findOne({ user: payment.user });
-        wallet.balance += payment.amount;
-        await wallet.save();
-      }
+    // ✅ Compare Paystack signature with the calculated one
+    if (paystackSignature !== expectedSignature) {
+      console.log("❌ Invalid Paystack Signature! Possible unauthorized request.");
+      return res.status(401).json({ message: "Unauthorized webhook" });
     }
 
-    res.status(200).json({ message: "Webhook processed successfully" });
+    console.log("✅ Webhook Verified Successfully!");
+    console.log("📌 Webhook Event:", req.body);
+
+    // ✅ Process the webhook event (existing logic)
+    await handleWebhookController(req.body);
+
+
+    return res.status(200).json({ message: "Webhook processed successfully" });
   } catch (error) {
-    console.error("Webhook handling error:", error);
-    res.status(400).json({ message: "Invalid webhook payload" });
+    console.error("❌ Webhook Processing Error:", error);
+    return res.status(400).json({ message: "Invalid webhook payload" });
   }
 };
 
-
+/**
+ * Withdraw Funds
+ */
 export const withdrawFunds = async (req, res) => {
   try {
     const { recipientCode, amount } = req.body;
-    const withdrawal = await initiateWithdrawal(req.user, recipientCode, amount);
+    if (!recipientCode || !amount || amount <= 0) throw new Error("Invalid withdrawal request");
 
+    const withdrawal = await initiateWithdrawal(req.user, recipientCode, amount);
     res.status(200).json({ message: "Withdrawal initiated", withdrawal });
   } catch (error) {
     res.status(400).json({ message: error.message });

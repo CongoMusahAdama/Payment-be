@@ -25,26 +25,39 @@ export const initializePayment = async (email, amount, callbackUrl) => {
       }
     );
 
-    console.log("Payment response:", response.data);
+    console.log("Payment initialized successfully:", response.data);
     return response.data;
   } catch (error) {
-    console.error("Error initializing payment:", error.response ? error.response.data : error.message);
-    throw new Error("Payment initialization failed");
+    console.error("Paystack error:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || "Payment initialization failed");
   }
 };
 
-// Function to verify a payment
 export const verifyPayment = async (reference) => {
-  const response = await axios.get(
-    `${PAYSTACK_BASE_URL}/transaction/verify/${reference}`,
-    {
+  try {
+    const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+    const response = await axios.get(`https://api.paystack.co/transaction/verify/${reference}`, {
       headers: {
         Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+        "Content-Type": "application/json",
       },
-    }
-  );
+    });
 
-  return response.data;
+    console.log("📌 Paystack Verification Response:", response.data); // Log full response
+
+    return response.data; // Ensure this returns data correctly
+  } catch (error) {
+    console.error("🚨 Paystack Verification Error:", error.response?.data || error.message);
+    throw new Error("Payment verification failed");
+  }
+};
+
+//Initiate Deposit
+export const initiateDeposit = async (user, amount) => {
+  if (!user || !user.email) throw new Error("User email is required for payment");
+
+  console.log("User Email:", user.email);
+  return initializePayment(user.email, amount, "http://localhost:3000/payment-success");
 };
 
 // Function to process withdrawals

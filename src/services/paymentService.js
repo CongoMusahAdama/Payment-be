@@ -2,90 +2,131 @@ import { initializePayment, verifyPayment, processWithdrawal } from "../config/p
 import Payment from "../models/payment.js";
 import Wallet from "../models/wallet.js";
 
-// Handle Paystack Webhook
-export const handleWebhook = async (event) => {
-  if (event.event === "charge.success") {
-    const payment = await Payment.findOne({ reference: event.data.reference });
-    if (payment) {
-      payment.status = "successful";
-      await payment.save();
+/**
+ * Initiate Deposit via Paystack
+ */
+export const initiateDeposit = async (user, amount) => {
+  try {
+    const callbackUrl = process.env.PAYSTACK_CALLBACK_URL || "http://localhost:3000/payment-success";
 
-      // Optionally, credit the user's wallet here
-      const wallet = await Wallet.findOne({ user: payment.user });
-      wallet.balance += payment.amount;
-      await wallet.save();
+    console.log("📌 Initiating payment with:", {
+      email: user.email,
+      amount,
+      callbackUrl,
+    });
+
+    const response = await initializePayment(user.email, amount, callbackUrl);
+
+    console.log("📌 Paystack API Response:", response?.data);
+
+    if (!response || !response.data) {
+      throw new Error("Failed to initialize payment with Paystack");
     }
+
+    const newPayment = new Payment({
+      user: user._id,
+      amount,
+      paymentMethod: "paystack",
+      status: "pending",
+      reference: response.data.reference,
+    });
+
+    await newPayment.save();
+    return response.data.authorization_url;
+  } catch (error) {
+    console.error("🚨 Error initiating deposit:", error);
+    throw new Error("Payment initiation failed");
   }
 };
 
 
-// Initialize Deposit Payment
-export const initiateDeposit = async (user, amount) => {
-  const callbackUrl = "http://localhost:3000/payment-success"; // Update this in production
+/**
+ * Confirm Deposit & Credit Wallet
+ */export const confirmDeposit = async (reference) => {
+  try {
+    console.log("🔍 Verifying payment with reference:", reference);
 
-  console.log("Initializing payment for amount:", amount);
-console.log("User object:", user); // Log the user object
-console.log("User email:", user.email); // Log the email being used
-const response = await initializePayment(user.email, amount, callbackUrl);
+    const response = await verifyPayment(reference);
 
+    console.log("📌 Full Paystack Response:", response); 
+    
+    if (!response || !response.status || response.message !== "Verification successful") {
+      console.error("❌ Paystack verification failed:", response);
+      throw new Error(`Payment verification failed: ${response?.message || "Unknown error"}`);
+    }
+    
 
+    const payment = await Payment.findOne({ reference });
+    if (!payment) throw new Error("Payment record not found");
 
+    if (payment.status === "successful") {
+      console.log("🚀 Payment already processed, skipping...");
+      return payment; // Prevent double crediting
+    }
 
+    // ✅ Update Payment Status
+    payment.status = "successful";
+    await payment.save();
 
+    // ✅ Credit User Wallet
+    const wallet = await Wallet.findOne({ user: payment.user });
+    if (wallet) {
+      wallet.balance += payment.amount;
+      await wallet.save();
+    }
 
-
-
-console.log("Payment response:", response);
-const newPayment = new Payment({
-
-
-
-
-
-    user: user._id,
-    amount,
-    paymentMethod: "paystack",
-    status: "pending",
-    reference: response.data.reference,
-  });
-
-  await newPayment.save();
-
-  return response.data.authorization_url; // Return the Paystack payment link
+    console.log("✅ Payment confirmed and wallet credited.");
+    return payment;
+  } catch (error) {
+    console.error("❌ Error confirming deposit:", error.message);
+    throw new Error("Deposit verification failed");
+  }
 };
 
-// Verify Payment and Credit User Wallet
-export const confirmDeposit = async (reference) => {
-console.log("Verifying payment with reference:", reference); // Log the reference being used
-const response = await verifyPayment(reference);
 
+/**
+ * Handle Paystack Webhooks Securely
+ */
+export const handleWebhook = async (event) => {
+  try {
+    console.log("Received Webhook Event:", event.event);
 
-  if (response.data.status !== "success") throw new Error("Payment verification failed");
+    if (event.event !== "charge.success") return;
 
-  const payment = await Payment.findOne({ reference });
-  if (!payment) throw new Error("Payment record not found");
+    const payment = await Payment.findOne({ reference: event.data.reference });
+    if (payment && payment.status !== "successful") {
+      payment.status = "successful";
+      await payment.save();
 
-  payment.status = "successful";
-  await payment.save();
-
-  // Credit user wallet
-  const wallet = await Wallet.findOne({ user: payment.user });
-  wallet.balance += payment.amount;
-  await wallet.save();
-
-  return payment;
+      const wallet = await Wallet.findOne({ user: payment.user });
+      if (wallet) {
+        wallet.balance += payment.amount;
+        await wallet.save();
+      }
+    }
+  } catch (error) {
+    console.error("Error handling webhook:", error);
+  }
 };
 
-// Process Withdrawals
+/**
+ * Process Withdrawals
+ */
 export const initiateWithdrawal = async (user, recipientCode, amount) => {
-  const wallet = await Wallet.findOne({ user: user._id });
+  try {
+    const wallet = await Wallet.findOne({ user: user._id });
 
-  if (wallet.balance < amount) throw new Error("Insufficient balance");
+    if (!wallet || wallet.balance < amount) throw new Error("Insufficient balance");
 
-  const response = await processWithdrawal(recipientCode, amount);
+    const response = await processWithdrawal(recipientCode, amount);
+    if (!response || !response.data) throw new Error("Failed to process withdrawal");
 
-  wallet.balance -= amount;
-  await wallet.save();
+    wallet.balance -= amount;
+    await wallet.save();
 
-  return response.data;
+    return response.data;
+  } catch (error) {
+    console.error("Error initiating withdrawal:", error);
+    throw new Error("Withdrawal process failed");
+  }
 };

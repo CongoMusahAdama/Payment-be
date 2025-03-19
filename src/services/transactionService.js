@@ -1,5 +1,6 @@
 import User from "../models/user.js";
 import Transaction from "../models/transaction.js";
+import MoneyRequest from "../models/MoneyRequest.js"; // Import MoneyRequest model
 import Wallet from "../models/wallet.js";
 import mongoose from "mongoose"; 
 
@@ -7,10 +8,10 @@ import mongoose from "mongoose";
 
 
 // ✅ Secure Fund Transfer
-export const transferFundsService = async (senderId, recipientId, amount) => {
+export const transferFundsService = async ( senderId, recipientId, amount) => {
   if (amount <= 0) throw new Error("Transfer amount must be greater than zero");
 
-  console.log("Sender ID:", senderId);
+  console.log("SENDER ID:", senderId);
   console.log("Recipient ID:", recipientId);
   const senderWallet = await Wallet.findOne({ user: senderId });
 
@@ -31,10 +32,8 @@ export const transferFundsService = async (senderId, recipientId, amount) => {
 
   // Create transaction record
   const transaction = new Transaction({
-    recipient: mongoose.Types.ObjectId(recipientId), // Ensure recipientId is an ObjectId
-
     sender: senderId,
-    recipient: mongoose.Types.ObjectId(recipientId), // Ensure recipientId is an ObjectId
+    recipient: mongoose.Types.ObjectId(recipientId), // recipientId is an ObjectId
 
     transactionType: "transfer",
     amount,
@@ -51,12 +50,15 @@ export const transferFundsService = async (senderId, recipientId, amount) => {
 export const requestMoneyService = async (requesterId, recipientId, amount, note) => {
   if (amount <= 0) throw new Error("Requested amount must be greater than zero");
 
-  const moneyRequest = new Transaction({
-    sender: requesterId, // The person requesting the money
-    recipient: recipientId, // The person being asked to send money
-    transactionType: "request",
-    amount,
+const moneyRequest = new MoneyRequest({
+    requesterId: requesterId, // The person requesting the money
+    recipientId: recipientId, // The person being asked to send money
+
     status: "pending",
+
+    amount,
+    transactionType: "request",
+
     reference: `REQ-${Date.now()}`,
     note
   });
@@ -81,4 +83,3 @@ export const getUserTransactions = async (userId, filters) => {
   const transactions = await Transaction.find(query).sort({ createdAt: -1 }); // Latest first
   return transactions;
 };
-

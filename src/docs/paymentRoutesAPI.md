@@ -8,7 +8,8 @@
 - **Request Body:**
 ```json
 {
-  "amount": <amount> // Amount to deposit (e.g., 1000)
+  "amount": <amount>, // Amount to deposit (e.g., 1000)
+  "currency": "<currency>" // Currency of the deposit (e.g., "NGN")
 }
 ```
 - **Response:**
@@ -55,7 +56,8 @@
 ```json
 {
   "recipientCode": "<recipient_code>", // Code of the recipient
-  "amount": <amount> // Amount to withdraw (e.g., 500)
+  "amount": <amount>, // Amount to withdraw (e.g., 500)
+  "currency": "<currency>" // Currency of the withdrawal (e.g., "NGN")
 }
 ```
 - **Response:**
@@ -98,3 +100,38 @@
     {
       "message": "Invalid webhook payload"
     }
+    ```
+
+## Testing Paystack Functions with Postman
+
+### To Test Deposit:
+- **Method**: `POST`
+- **URL**: `http://localhost:5000/api/payments/deposit`
+- **Headers**: 
+  - `Authorization: Bearer <token>`
+- **Body**:
+```json
+{
+  "amount": 1000,
+  "currency": "NGN"
+}
+```
+
+### To Test Verify Deposit:
+- **Method**: `GET`
+- **URL**: `http://localhost:5000/api/payments/verify?reference=<reference>`
+- **Response**: 
+  - Replace `<reference>` with the actual payment reference.
+
+### To Test Withdraw:
+- **Method**: `POST`
+- **URL**: `http://localhost:5000/api/payments/withdraw`
+- **Headers**: 
+  - `Authorization: Bearer <token>`
+- **Body**:
+```json
+{
+  "recipientCode": "<recipient_code>",
+  "amount": 500,
+  "currency": "NGN"
+}

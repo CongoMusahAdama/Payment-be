@@ -1,6 +1,8 @@
 import express from "express";
-import { depositFunds, verifyDeposit, withdrawFunds, handleWebhook } from "../controllers/paymentController.js";
-import authMiddleware from "../middleware/authMiddleware.js"; // Updated to default import
+import { depositFunds, verifyDeposit, withdrawFunds, handleWebhookController } from "../controllers/paymentController.js";
+
+
+import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -45,6 +47,13 @@ router.post("/deposit", authMiddleware, depositFunds);
  *     tags: [Payment Management]
  *     summary: Verify a deposit
  *     description: This endpoint allows users to verify a deposit.
+ *     parameters:
+ *       - in: query
+ *         name: reference
+ *         required: true
+ *         description: The reference of the payment to verify
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Deposit verified successfully
@@ -71,6 +80,9 @@ router.get("/verify", verifyDeposit);
  *           schema:
  *             type: object
  *             properties:
+ *               recipientCode:
+ *                 type: string
+ *                 description: The code of the recipient
  *               amount:
  *                 type: number
  *                 description: The amount to withdraw
@@ -96,12 +108,28 @@ router.post("/withdraw", authMiddleware, withdrawFunds);
  *     tags: [Payment Management]
  *     summary: Handle Paystack webhook notifications
  *     description: This endpoint handles webhook notifications from Paystack for payment status updates.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               event:
+ *                 type: string
+ *                 description: Type of the event (e.g., charge.success)
+ *               data:
+ *                 type: object
+ *                 properties:
+ *                   reference:
+ *                     type: string
+ *                     description: Reference of the payment
  *     responses:
  *       200:
  *         description: Webhook processed successfully
  *       400:
  *         description: Invalid webhook payload
  */
-router.post("/webhook", handleWebhook);
+router.post("/webhook", handleWebhookController);
 
 export default router;

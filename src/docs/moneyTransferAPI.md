@@ -49,6 +49,7 @@ http://localhost:5000/api/transactions
 ```json
 {
   "recipientId": "65bcf59f123456789abcdef1",
+  "requesterId": "6578858644848r4",
   "amount": 100,
   "note": "Can you send me $100?"
 }

@@ -12,7 +12,7 @@ const paymentSchema = new mongoose.Schema({
     },
     paymentMethod: { 
         type: String, 
-        enum: ["credit card", "momo wallet"], 
+        enum: ["credit card", "momo wallet", "paystack"], 
         required: true
      },
     transaction: {
@@ -29,7 +29,7 @@ const paymentSchema = new mongoose.Schema({
         type: String,
          unique: true, 
          required: true 
-        },
+    },
 }, { timestamps: true });
 
 const Payment = mongoose.model('Payment', paymentSchema);

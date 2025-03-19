@@ -66,7 +66,10 @@ router.post("/transfer", authMiddleware, transferFunds);
  *               description: Amount requested.
  *             recipientId:
  *               type: string
- *               description: ID of the requester.
+ *               description: ID of the recipient
+ *             requesterId: 
+ *                type: string
+ *                description: ID of the requester
  *             note:
  *                type: string
  *                description: any other thing

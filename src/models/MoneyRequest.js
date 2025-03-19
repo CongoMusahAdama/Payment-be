@@ -1,12 +1,13 @@
 import mongoose from 'mongoose';
 
 const moneyRequestSchema = new mongoose.Schema({
-    requester: {
+    requesterId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
     },
-    recipient: {
+    recipientId: {
+
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
