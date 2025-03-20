@@ -8,18 +8,26 @@ import mongoose from "mongoose";
 
 
 // ✅ Secure Fund Transfer
-export const transferFundsService = async ( senderId, recipientId, amount) => {
+export const transferFundsService = async (senderId, recipientId, amount) => {
   if (amount <= 0) throw new Error("Transfer amount must be greater than zero");
 
   console.log("SENDER ID:", senderId);
-  console.log("Recipient ID:", recipientId);
+  console.log("RECIPIENT ID:", recipientId);
+
+  // Convert recipientId to a valid MongoDB ObjectId
+  const recipientObjectId = new mongoose.Types.ObjectId(recipientId);
+
+  // Find sender's wallet
   const senderWallet = await Wallet.findOne({ user: senderId });
+  if (!senderWallet) throw new Error("Sender's wallet not found");
 
-  const recipientWallet = await Wallet.findOne({ user: new mongoose.Types.ObjectId(recipientId) });
+  // Find recipient's wallet
+  const recipientWallet = await Wallet.findOne({ user: recipientObjectId });
+  if (!recipientWallet) {
+    console.log("Recipient Wallet: null");
+    throw new Error("Recipient's wallet not found");
+  }
 
-
-
-  if (!senderWallet || !recipientWallet) throw new Error("Wallet not found");
   if (senderWallet.balance < amount) throw new Error("Insufficient funds");
 
   // Deduct amount from sender's wallet
@@ -33,8 +41,7 @@ export const transferFundsService = async ( senderId, recipientId, amount) => {
   // Create transaction record
   const transaction = new Transaction({
     sender: senderId,
-    recipient: mongoose.Types.ObjectId(recipientId), // recipientId is an ObjectId
-
+    recipient: recipientObjectId, // Ensure this is stored as ObjectId
     transactionType: "transfer",
     amount,
     status: "completed",
@@ -45,6 +52,8 @@ export const transferFundsService = async ( senderId, recipientId, amount) => {
 
   return transaction;
 };
+
+
 
 // ✅ Money Request Functionality
 export const requestMoneyService = async (requesterId, recipientId, amount, note) => {

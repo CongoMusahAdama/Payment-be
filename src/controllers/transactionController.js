@@ -1,6 +1,6 @@
 import { transferFundsService, requestMoneyService, getUserTransactions } from "../services/transactionService.js";
 import mongoose from "mongoose"; // Import mongoose for ObjectId validation
-
+import Transaction from "../models/transaction.js";
 
 
 // ✅ Handle Money Transfers
@@ -9,21 +9,23 @@ export const transferFunds = async (req, res) => {
     const { recipientId, amount } = req.body;
     const senderId = req.user._id; // Get user ID from JWT
 
-    // Validate recipientId is not empty and is a string
-    if (!recipientId || typeof recipientId !== 'string') {
-        return res.status(400).json({ message: "Invalid recipient ID format" });
+    console.log("Received Request Body:", req.body);
+    console.log("Sender ID (from token):", senderId);
 
+    if (!recipientId || typeof recipientId !== 'string') {
+      console.log("Invalid Recipient ID Format:", recipientId);
+      return res.status(400).json({ message: "Invalid recipient ID format" });
     }
 
     const transaction = await transferFundsService(senderId, recipientId, amount);
 
-
-
     res.status(200).json({ message: "Transfer successful", transaction });
   } catch (error) {
+    console.error("Transfer Error:", error.message);
     res.status(400).json({ message: error.message });
   }
 };
+
 
 // ✅ Handle Money Requests
 export const requestMoney = async (req, res) => {

@@ -1,6 +1,6 @@
 import express from "express";
 import { transferFunds, requestMoney, getTransactionHistory } from "../controllers/transactionController.js";
-import authMiddleware from "../middleware/authMiddleware.js"; 
+import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -10,39 +10,30 @@ const router = express.Router();
  *   post:
  *     tags: [Money Transfer Management]
  *     summary: Secure fund transfer
+ *     security:
+ *       - bearerAuth: []
  *     description: Transfers funds securely from one user to another.
- *     parameters:
- *       - in: body
- *         name: transferDetails
- *         description: Details of the transfer.
- *         required: true
- *         schema:
- *           type: object
- *           properties:
- *             amount:
- *               type: number
- *               description: Amount to transfer.
- *             sendersId:
- *               type: string
- *               decsription: ID of the sender
- *             recipientId:
- *               type: string
- *               description: ID of the recipient.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               amount:
+ *                 type: number
+ *                 description: Amount to transfer.
+ *               sendersId:
+ *                 type: string
+ *                 description: ID of the sender.
+ *               recipientId:
+ *                 type: string
+ *                 description: ID of the recipient.
  *     responses:
  *       200:
  *         description: Transfer successful.
  *       400:
  *         description: Invalid request.
- *     x-postman-collection:
- *       description: |
- *         Example Postman request:
- *         - URL: http://localhost:5000/transfer
- *         - Method: POST
- *         - Body:
- *           {
- *             "amount": 100,
- *             "recipientId": "recipient_user_id"
- *           }
  */
 router.post("/transfer", authMiddleware, transferFunds);
 
@@ -52,45 +43,35 @@ router.post("/transfer", authMiddleware, transferFunds);
  *   post:
  *     tags: [Money Transfer Management]
  *     summary: Request money from another user
+ *     security:
+ *       - bearerAuth: []
  *     description: Sends a money request to another user.
- *     parameters:
- *       - in: body
- *         name: requestDetails
- *         description: Details of the money request.
- *         required: true
- *         schema:
- *           type: object
- *           properties:
- *             amount:
- *               type: number
- *               description: Amount requested.
- *             recipientId:
- *               type: string
- *               description: ID of the recipient
- *             requesterId: 
- *                type: string
- *                description: ID of the requester
- *             note:
- *                type: string
- *                description: any other thing
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               amount:
+ *                 type: number
+ *                 description: Amount requested.
+ *               recipientId:
+ *                 type: string
+ *                 description: ID of the recipient.
+ *               requesterId:
+ *                 type: string
+ *                 description: ID of the requester.
+ *               note:
+ *                 type: string
+ *                 description: Additional note.
  *     responses:
  *       200:
  *         description: Request sent successfully.
  *       400:
  *         description: Invalid request.
- *     x-postman-collection:
- *       description: |
- *         Example Postman request:
- *         - URL: http://localhost:5000/request-money
- *         - Method: POST
- *         - Body:
- *           {
- *             "amount": 50,
- *             "requesterId": "requester_user_id"
- *           }
  */
 router.post("/request-money", authMiddleware, requestMoney);
-
 
 /**
  * @swagger
@@ -98,35 +79,57 @@ router.post("/request-money", authMiddleware, requestMoney);
  *   get:
  *     tags: [Money Transfer Management]
  *     summary: Get transaction history
+ *     security:
+ *       - bearerAuth: []
  *     description: Retrieves the transaction history for the authenticated user.
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Start date for filtering transactions.
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: End date for filtering transactions.
+ *       - in: query
+ *         name: transactionType
+ *         schema:
+ *           type: string
+ *           enum: [transfer, request]
+ *         description: Type of transaction to filter (transfer or request).
  *     responses:
  *       200:
  *         description: Successfully retrieved transaction history.
- *         schema:
- *           type: object
- *           properties:
- *             transactions:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                     description: Transaction ID
- *                   amount:
- *                     type: number
- *                     description: Amount of the transaction
- *                   date:
- *                     type: string
- *                     format: date-time
- *                     description: Date of the transaction
- *                   status:
- *                     type: string
- *                     description: Status of the transaction
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 transactions:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         description: Transaction ID.
+ *                       amount:
+ *                         type: number
+ *                         description: Amount of the transaction.
+ *                       date:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Date of the transaction.
+ *                       status:
+ *                         type: string
+ *                         description: Status of the transaction.
  *       400:
  *         description: Invalid request.
  */
 router.get("/history", authMiddleware, getTransactionHistory);
-
 
 export default router;

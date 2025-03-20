@@ -25,9 +25,9 @@ const router = express.Router();
  *               amount:
  *                 type: number
  *                 description: The amount to deposit
- *               currency:
+ *               email:
  *                 type: string
- *                 description: The currency of the deposit
+ *                 description: The email of the user
  *     responses:
  *       200:
  *         description: Funds deposited successfully

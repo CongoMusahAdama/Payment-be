@@ -42,46 +42,54 @@ export const initiateDeposit = async (user, amount) => {
 
 /**
  * Confirm Deposit & Credit Wallet
- */export const confirmDeposit = async (reference) => {
+ */
+export const confirmDeposit = async (reference) => {
   try {
     console.log("🔍 Verifying payment with reference:", reference);
 
     const response = await verifyPayment(reference);
+    console.log("📌 Full Paystack Response:", response);
 
-    console.log("📌 Full Paystack Response:", response); 
-    
     if (!response || !response.status || response.message !== "Verification successful") {
       console.error("❌ Paystack verification failed:", response);
       throw new Error(`Payment verification failed: ${response?.message || "Unknown error"}`);
     }
-    
 
     const payment = await Payment.findOne({ reference });
     if (!payment) throw new Error("Payment record not found");
 
-    if (payment.status === "successful") {
+    if (payment.status === "completed") {
       console.log("🚀 Payment already processed, skipping...");
-      return payment; // Prevent double crediting
+      return payment;
     }
 
     // ✅ Update Payment Status
-    payment.status = "successful";
+    payment.status = "completed";
     await payment.save();
 
-    // ✅ Credit User Wallet
-    const wallet = await Wallet.findOne({ user: payment.user });
-    if (wallet) {
-      wallet.balance += payment.amount;
-      await wallet.save();
+    // ✅ Find or Create Wallet
+    let wallet = await Wallet.findOne({ user: payment.user });
+    
+    if (!wallet) {
+      console.log("🆕 No wallet found, creating a new one...");
+      wallet = new Wallet({
+        user: payment.user,
+        balance: 0, // Start from zero
+      });
     }
 
-    console.log("✅ Payment confirmed and wallet credited.");
+    // ✅ Credit Wallet
+    wallet.balance += payment.amount;
+    await wallet.save();
+
+    console.log(`✅ Payment confirmed and wallet credited. New Balance: ${wallet.balance}`);
     return payment;
   } catch (error) {
     console.error("❌ Error confirming deposit:", error.message);
     throw new Error("Deposit verification failed");
   }
 };
+
 
 
 /**
@@ -112,21 +120,48 @@ export const handleWebhook = async (event) => {
 /**
  * Process Withdrawals
  */
+import mongoose from "mongoose";
+
 export const initiateWithdrawal = async (user, recipientCode, amount) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    const wallet = await Wallet.findOne({ user: user._id });
+    if (!amount || amount <= 0) throw new Error("Invalid withdrawal amount");
 
-    if (!wallet || wallet.balance < amount) throw new Error("Insufficient balance");
+    const wallet = await Wallet.findOne({ user: user._id }).session(session);
+    if (!wallet) throw new Error("Wallet not found");
+    if (wallet.balance < amount) throw new Error("Insufficient balance");
 
+    // Call external withdrawal API
     const response = await processWithdrawal(recipientCode, amount);
-    if (!response || !response.data) throw new Error("Failed to process withdrawal");
 
+    if (!response || !response.data) {
+      console.error("Withdrawal API response error:", response);
+      throw new Error("Failed to process withdrawal");
+    }
+
+    if (response.data.status !== "success") {
+      console.error("Withdrawal failed:", response.data);
+      throw new Error(response.data.message || "Withdrawal processing error");
+    }
+
+    // Deduct balance only if API call was successful
     wallet.balance -= amount;
-    await wallet.save();
+    await wallet.save({ session });
+
+    // Commit transaction (finalize changes)
+    await session.commitTransaction();
+    session.endSession();
 
     return response.data;
   } catch (error) {
-    console.error("Error initiating withdrawal:", error);
-    throw new Error("Withdrawal process failed");
+    console.error("Error initiating withdrawal:", error.message);
+    
+    // Abort transaction in case of failure
+    await session.abortTransaction();
+    session.endSession();
+
+    throw new Error(error.message || "Withdrawal process failed");
   }
 };

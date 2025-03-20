@@ -62,20 +62,27 @@ export const initiateDeposit = async (user, amount) => {
 
 // Function to process withdrawals
 export const processWithdrawal = async (recipientCode, amount) => {
-  const response = await axios.post(
-    `${PAYSTACK_BASE_URL}/transfer`,
-    {
-      source: "balance",
-      reason: "Withdrawal",
-      amount: amount * 100, // Convert to kobo
-      recipient: recipientCode,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+  try {
+    const response = await axios.post(
+      `${process.env.PAYSTACK_BASE_URL}/transfer`,
+      {
+        source: "balance",
+        reason: "Withdrawal",
+        amount: amount * 100, // Convert to kobo
+        recipient: recipientCode,
       },
-    }
-  );
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-  return response.data;
+    console.log("✅ Paystack Response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Paystack Error:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || "Withdrawal failed");
+  }
 };

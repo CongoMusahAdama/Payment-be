@@ -147,6 +147,8 @@ router.post('/mfa-setup', authController.mfaSetup);
  *   post:
  *     summary: MFA Verification
  *     description: Verifies the provided MFA code.
+ *    security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:

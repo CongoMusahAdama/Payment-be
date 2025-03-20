@@ -10,6 +10,8 @@ const router = express.Router();
  *   get:
  *     tags: [Report Management]
  *     summary: Download transaction report
+ *     security:
+ *       - bearerAuth: []
  *     description: Downloads the transaction report in PDF or CSV format.
  *     responses:
  *       200:

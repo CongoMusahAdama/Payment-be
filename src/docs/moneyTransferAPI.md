@@ -9,14 +9,14 @@ http://localhost:5000/api/transactions
 
 ### 📌 Test Secure Fund Transfer
 - **Request:** `POST /api/transactions/transfer`
+- **Headers:**
+  - `Content-Type: application/json`
 
 #### Body (JSON):
 ```json
 {
   "recipientId": "65bcf59f123456789abcdef1",
   "senderId": "65bcf59f123456789abcdef1",
-  "amount": 50
-}
 ```
 
 #### ✅ Expected Response (Success):

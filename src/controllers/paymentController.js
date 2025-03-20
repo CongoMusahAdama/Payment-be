@@ -53,30 +53,39 @@ export const verifyDeposit = async (req, res) => {
  * Handle Paystack Webhook
  */
 export const handleWebhookController = async (req, res) => {
+  console.log("📥 Raw request body:", req.body);
 
   try {
-    const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY; // Load secret key from env
-    const paystackSignature = req.headers["x-paystack-signature"]; // Extract signature
-    const requestBody = JSON.stringify(req.body); // Get raw request body
+    const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY;
+    const paystackSignature = req.headers["x-paystack-signature"];
+
+    if (!paystackSecretKey) {
+      console.error("❌ Paystack Secret Key is missing!");
+      return res.status(500).json({ message: "Server misconfiguration" });
+    }
 
     // ✅ Compute the expected signature
     const expectedSignature = crypto
       .createHmac("sha512", paystackSecretKey)
-      .update(requestBody)
+      .update(JSON.stringify(req.body))
       .digest("hex");
 
     // ✅ Compare Paystack signature with the calculated one
     if (paystackSignature !== expectedSignature) {
-      console.log("❌ Invalid Paystack Signature! Possible unauthorized request.");
+      console.error("❌ Invalid Paystack Signature! Possible unauthorized request.");
       return res.status(401).json({ message: "Unauthorized webhook" });
     }
 
     console.log("✅ Webhook Verified Successfully!");
-    console.log("📌 Webhook Event:", req.body);
+    console.log("📌 Webhook Event:", req.body.event);
 
-    // ✅ Process the webhook event (existing logic)
-    await handleWebhookController(req.body);
+    // ✅ Process specific webhook events
+    if (req.body.event === "charge.success") {
+      const paymentReference = req.body.data.reference;
 
+      // Handle Payment Logic Here (e.g., Update DB)
+      console.log("✅ Payment Successful for Reference:", paymentReference);
+    }
 
     return res.status(200).json({ message: "Webhook processed successfully" });
   } catch (error) {
@@ -84,7 +93,6 @@ export const handleWebhookController = async (req, res) => {
     return res.status(400).json({ message: "Invalid webhook payload" });
   }
 };
-
 /**
  * Withdraw Funds
  */
