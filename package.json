@@ -5,11 +5,11 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-  "test": "jest",
   "dev": "nodemon ./server.js",
   "build": "echo 'No build step required'",
   "start": "node server.js"
 },
+
   "author": "",
   "license": "ISC",
   "dependencies": {
