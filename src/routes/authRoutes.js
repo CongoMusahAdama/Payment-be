@@ -1,6 +1,5 @@
 import express from 'express';
 import authController from '../controllers/authController.js';
-
 import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -25,9 +24,9 @@ const router = express.Router();
  *               password:
  *                 type: string
  *               address:
- *                  type: string
- *               phone: 
- *                   type: string
+ *                 type: string
+ *               phone:
+ *                 type: string
  *     responses:
  *       201:
  *         description: User registered successfully
@@ -37,8 +36,6 @@ const router = express.Router();
  *       - Authentication
  */
 router.post('/register', authController.register);
-
-
 
 /**
  * @swagger
@@ -67,8 +64,6 @@ router.post('/register', authController.register);
  */
 router.post('/login', authController.login);
 
-
-
 /**
  * @swagger
  * /api/auth/logout:
@@ -85,9 +80,6 @@ router.post('/login', authController.login);
  */
 router.post('/logout', authMiddleware, authController.logout);
 
-
-
-// Refresh Token
 /**
  * @swagger
  * /api/auth/refresh-token:
@@ -108,12 +100,10 @@ router.post('/logout', authMiddleware, authController.logout);
  *         description: New token generated
  *       401:
  *         description: Refresh token is required
- *    tags:
- *       - Authentication
+ *     tags:
+ *       - Authentication  # FIXED: Proper indentation
  */
 router.post('/refresh-token', authController.refreshToken);
-
-
 
 /**
  * @swagger
@@ -135,11 +125,8 @@ router.post('/refresh-token', authController.refreshToken);
  *         description: MFA setup initiated, verification code sent
  *     tags:
  *       - Authentication
- *     
  */
 router.post('/mfa-setup', authController.mfaSetup);
-
-
 
 /**
  * @swagger
@@ -147,7 +134,7 @@ router.post('/mfa-setup', authController.mfaSetup);
  *   post:
  *     summary: MFA Verification
  *     description: Verifies the provided MFA code.
- *    security:
+ *     security:  # FIXED: Proper indentation
  *       - bearerAuth: []
  *     requestBody:
  *       required: true
@@ -166,11 +153,9 @@ router.post('/mfa-setup', authController.mfaSetup);
  *       400:
  *         description: Invalid verification code
  *     tags:
- *       - Authentication 
+ *       - Authentication
  */
 router.post('/mfa-verify', authController.mfaVerify);
-
-
 
 // Default export for the router
 export default router;
