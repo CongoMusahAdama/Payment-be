@@ -9,9 +9,26 @@ import paymentRoutes from "./src/routes/paymentRoutes.js"
 import reportRoutes from "./src/routes/reportRoutes.js"
 const app = express();
 
-// Use CORS middleware
-app.use(cors()); // Enable CORS for all routes
 
+// Configure CORS for Local & Deployed Frontend
+const allowedOrigins = [
+    "http://localhost:5173", // Local frontend (during development)
+    "https://your-frontend-domain.com", // Deployed frontend (replace when live)
+    "https://payment-be-3tc2.onrender.com", // Backend itself (for Swagger)
+  ];
+  
+  app.use(
+    cors({
+      origin: allowedOrigins,
+      methods: ["GET", "POST", "PUT", "DELETE"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+      credentials: true, 
+    })
+  );
+  
+  // Allow Preflight Requests for All Routes 
+  app.options("*", cors());
+  
 
 // Connect to the database
 connectDB();
