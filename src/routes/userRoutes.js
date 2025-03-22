@@ -11,7 +11,7 @@ const router = express.Router();
  *   get:
  *     summary: Get user profile
  *     description: Retrieves the user profile based on the user ID.
- *  security:
+ *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
@@ -31,6 +31,8 @@ router.get('/profile', authMiddleware, getUserProfile); // Get user profile
  *   post:
  *     summary: Upload KYC document
  *     description: Uploads a KYC document for the user.
+ *     security:
+ *       - bearerAuth: []  
  *     requestBody:
  *       required: true
  *       content:
@@ -57,7 +59,7 @@ router.post('/upload-kyc', authMiddleware, upload.single('kycDocument'), uploadK
  *   put:
  *     summary: Update user profile
  *     description: Updates the user profile with the provided details.
- *  security:
+ *     security:
  *       - bearerAuth: []
  *     requestBody:
  *       required: true
