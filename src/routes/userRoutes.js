@@ -11,6 +11,8 @@ const router = express.Router();
  *   get:
  *     summary: Get user profile
  *     description: Retrieves the user profile based on the user ID.
+ *  security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: User profile retrieved successfully
@@ -55,6 +57,8 @@ router.post('/upload-kyc', authMiddleware, upload.single('kycDocument'), uploadK
  *   put:
  *     summary: Update user profile
  *     description: Updates the user profile with the provided details.
+ *  security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
