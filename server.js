@@ -14,7 +14,7 @@ const app = express();
 const allowedOrigins = [
     "http://localhost:5173", // Local frontend (during development)
     "https://your-frontend-domain.com", // Deployed frontend (replace when live)
-    "https://payment-be-3tc2.onrender.com", // Backend itself (for Swagger)
+    "https://payment-be-3tc2.onrender.com/api-docs", // Backend itself (for Swagger)
   ];
   
   app.use(
