@@ -10,24 +10,31 @@ import reportRoutes from "./src/routes/reportRoutes.js"
 const app = express();
 
 
-// Configure CORS for Local & Deployed Frontend
+// Fix CORS to allow Frontend & Public API Access
 const allowedOrigins = [
     "http://localhost:5173", // Local frontend (during development)
-    "https://your-frontend-domain.com", // Deployed frontend (replace when live)
-    "https://payment-be-3tc2.onrender.com/api-docs", // Backend itself (for Swagger)
-  ];
-  
-  app.use(
-    cors({
-      origin: allowedOrigins,
-      methods: ["GET", "POST", "PUT", "DELETE"],
-      allowedHeaders: ["Content-Type", "Authorization"],
-      credentials: true, 
-    })
-  );
-  
-  // Allow Preflight Requests for All Routes 
-  app.options("*", cors());
+    "https://your-frontend-domain.com", // Replace with actual deployed frontend
+    "https://payment-be-3tc2.onrender.com" // Backend URL (Render)
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true, // Allow cookies/auth headers
+  })
+);
+
+// Allow Preflight Requests for All Routes 
+app.options("*", cors());
+
   
 
 // Connect to the database
