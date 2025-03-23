@@ -75,7 +75,32 @@
     }
     ```
 
-## 4. Webhook
+## 4. Get User Balance
+- **Endpoint:** `GET /api/payments/balance`
+- **Description:** Retrieves the current balance of the user.
+- **Headers:**
+  - `Authorization: Bearer <token>` (replace `<token>` with the actual token)
+- **Response:**
+  - **Success (200):**
+    ```json
+    {
+      "balance": <balance> // User's current balance
+    }
+    ```
+  - **Error (401):**
+    ```json
+    {
+      "message": "Unauthorized"
+    }
+    ```
+  - **Error (500):**
+    ```json
+    {
+      "message": "Internal server error"
+    }
+    ```
+
+## 5. Webhook
 - **Endpoint:** `POST /api/payments/webhook`
 - **Description:** Handles webhook notifications from Paystack for payment status updates.
 - **Request Body:**
@@ -135,3 +160,16 @@
   "amount": 500,
   "currency": "NGN"
 }
+```
+
+### To Test Get User Balance:
+- **Method**: `GET`
+- **URL**: `http://localhost:5000/api/payments/balance`
+- **Headers**: 
+  - `Authorization: Bearer <token>`
+- **Response**:
+  - **Success (200)**:
+    ```json
+    {
+      "balance": <balance> // User's current balance
+    }

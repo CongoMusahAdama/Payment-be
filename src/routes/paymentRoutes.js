@@ -1,7 +1,5 @@
 import express from "express";
-import { depositFunds, verifyDeposit, withdrawFunds, handleWebhookController } from "../controllers/paymentController.js";
-
-
+import { depositFunds, verifyDeposit, withdrawFunds, handleWebhookController, getUserBalance } from "../controllers/paymentController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -86,7 +84,6 @@ router.get("/verify", verifyDeposit);
  *               amount:
  *                 type: number
  *                 description: The amount to withdraw
- *
  *     responses:
  *       200:
  *         description: Funds withdrawn successfully
@@ -101,12 +98,31 @@ router.post("/withdraw", authMiddleware, withdrawFunds);
 
 /**
  * @swagger
+ * /api/payments/balance:
+ *   get:
+ *     tags: [Payment Management]
+ *     summary: Get user balance
+ *     description: This endpoint allows users to retrieve their current balance.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User balance retrieved successfully
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/balance", authMiddleware, getUserBalance);
+
+/**
+ * @swagger
  * /api/payments/webhook:
  *   post:
  *     tags: [Payment Management]
  *     summary: Handle Paystack webhook notifications
  *     description: This endpoint handles webhook notifications from Paystack for payment status updates.
- * security:
+ *     security:
  *       - bearerAuth: []
  *     requestBody:
  *       required: true

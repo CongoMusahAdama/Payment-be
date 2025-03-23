@@ -118,9 +118,22 @@ export const handleWebhook = async (event) => {
 };
 
 /**
+ * Get User Profile
+ */
+export const getUserProfile = async (user) => {
+  try {
+    const wallet = await Wallet.findOne({ user: user._id });
+    if (!wallet) throw new Error("Wallet not found");
+    return { balance: wallet.balance }; // Return the user's balance
+  } catch (error) {
+    throw new Error("Unable to retrieve user profile");
+  }
+};
+
+/**
  * Process Withdrawals
  */
-import mongoose from "mongoose";
+
 
 export const initiateWithdrawal = async (user, recipientCode, amount) => {
   const session = await mongoose.startSession();

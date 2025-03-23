@@ -93,6 +93,7 @@ export const handleWebhookController = async (req, res) => {
     return res.status(400).json({ message: "Invalid webhook payload" });
   }
 };
+
 /**
  * Withdraw Funds
  */
@@ -103,10 +104,27 @@ export const withdrawFunds = async (req, res) => {
         return res.status(400).json({ message: "Please wait to verify your transfer verification pin from." });
     }
 
-
     const withdrawal = await initiateWithdrawal(req.user, recipientCode, amount);
-    res.status(200).json({ message: "Withdrawal initiated", withdrawal });
+    
+    // Fetch the user's balance after withdrawal
+    const userProfile = await getUserProfile(req.user);
+    const userBalance = userProfile.balance;
+
+    
+    res.status(200).json({ message: "Withdrawal initiated", withdrawal, balance: userBalance });
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+/**
+ * Get User Balance
+ */
+export const getUserBalance = async (user) => {
+  try {
+    const userData = await User.findById(user.id); // Assuming user.id is the identifier
+    return userData.balance; // Assuming balance is a field in the User model
+  } catch (error) {
+    throw new Error("Unable to retrieve user balance");
   }
 };
