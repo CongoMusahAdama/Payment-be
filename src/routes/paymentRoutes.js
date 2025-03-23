@@ -86,9 +86,7 @@ router.get("/verify", verifyDeposit);
  *               amount:
  *                 type: number
  *                 description: The amount to withdraw
- *               currency:
- *                 type: string
- *                 description: The currency of the withdrawal
+ *
  *     responses:
  *       200:
  *         description: Funds withdrawn successfully

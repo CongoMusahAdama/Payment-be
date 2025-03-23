@@ -99,7 +99,10 @@ export const handleWebhookController = async (req, res) => {
 export const withdrawFunds = async (req, res) => {
   try {
     const { recipientCode, amount } = req.body;
-    if (!recipientCode || !amount || amount <= 0) throw new Error("Invalid withdrawal request");
+    if (!recipientCode || !amount || amount <= 0) {
+        return res.status(400).json({ message: "Please wait to verify your transfer verification pin from." });
+    }
+
 
     const withdrawal = await initiateWithdrawal(req.user, recipientCode, amount);
     res.status(200).json({ message: "Withdrawal initiated", withdrawal });
