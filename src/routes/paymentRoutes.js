@@ -106,6 +106,8 @@ router.post("/withdraw", authMiddleware, withdrawFunds);
  *     tags: [Payment Management]
  *     summary: Handle Paystack webhook notifications
  *     description: This endpoint handles webhook notifications from Paystack for payment status updates.
+ * security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
