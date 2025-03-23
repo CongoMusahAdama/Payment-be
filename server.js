@@ -60,7 +60,7 @@ app.use('/api/reports', reportRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+app.listen(PORT,() => {
     console.log(`Server running on port http://localhost:${PORT}`);
     console.log(`Swagger documentation available at http://localhost:${PORT}/api-docs`); // Log Swagger URL
 });
