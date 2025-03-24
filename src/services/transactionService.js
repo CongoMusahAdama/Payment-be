@@ -21,12 +21,7 @@ export const transferFundsService = async (senderId, recipientId, amount) => {
   const senderWallet = await Wallet.findOne({ user: senderId });
   if (!senderWallet) throw new Error("Sender's wallet not found");
 
-  // Find recipient's wallet
-  const recipientWallet = await Wallet.findOne({ user: recipientObjectId });
-  if (!recipientWallet) {
-    console.log("Recipient Wallet: null");
-    throw new Error("Recipient's wallet not found");
-  }
+ 
 
   if (senderWallet.balance < amount) throw new Error("Insufficient funds");
 
@@ -34,9 +29,14 @@ export const transferFundsService = async (senderId, recipientId, amount) => {
   senderWallet.balance -= amount;
   await senderWallet.save();
 
-  // Add amount to recipient's wallet
+  // Create a new wallet for the recipient if it doesn't exist
+  let recipientWallet = await Wallet.findOne({ user: recipientObjectId });
+  if (!recipientWallet) {
+    recipientWallet = new Wallet({ user: recipientObjectId, balance: 0 });
+  }
   recipientWallet.balance += amount;
   await recipientWallet.save();
+
 
   // Create transaction record
   const transaction = new Transaction({

@@ -49,9 +49,10 @@ export const requestMoney = async (req, res) => {
 export const getTransactionHistory = async (req, res) => {
   try {
     const userId = req.user._id;
-    const filters = req.query; // Extract filters from request
 
-    const transactions = await getUserTransactions(userId, filters);
+
+    const transactions = await getUserTransactions(userId);
+
 
     res.status(200).json({ message: "Transaction history retrieved", transactions });
   } catch (error) {

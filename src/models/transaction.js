@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import User from './user.js';  // Import User model
 
 const transactionSchema = new mongoose.Schema({
     sender: {
@@ -13,8 +14,8 @@ const transactionSchema = new mongoose.Schema({
     },
     transactionType: { 
         type: String,
-        enum: ["transfer", "withdrawal"],
-         required: true 
+        enum: ["deposit", "transfer", "withdrawal"],
+        required: true 
     },
     amount: {
         type: Number,
@@ -22,7 +23,7 @@ const transactionSchema = new mongoose.Schema({
     },
     status: {
         type: String, 
-        enum: ["Pending", "completed", "failed"], 
+        enum: ["pending", "completed", "failed"], 
         default: "pending" 
     },
     reference: {
@@ -32,7 +33,7 @@ const transactionSchema = new mongoose.Schema({
     },
     note: {
          type: String 
-        },
+    },
     timestamp: {
         type: Date,
         default: Date.now,
@@ -42,6 +43,24 @@ const transactionSchema = new mongoose.Schema({
         ref: 'Wallet',
     },
 }, { timestamps: true });
+
+// ✅ Mongoose Middleware: Update User Model on Transaction Save
+transactionSchema.post('save', async function (doc, next) {
+    try {
+        // Update sender's transaction history
+        await User.findByIdAndUpdate(doc.sender, { $push: { transactions: doc._id } });
+
+        // Update recipient's transaction history (except for withdrawals)
+        if (doc.transactionType !== 'withdrawal') {
+            await User.findByIdAndUpdate(doc.recipient, { $push: { transactions: doc._id } });
+        }
+
+        next();
+    } catch (error) {
+        console.error('Error updating user transactions:', error);
+        next(error);
+    }
+});
 
 const Transaction = mongoose.model('Transaction', transactionSchema);
 export default Transaction;

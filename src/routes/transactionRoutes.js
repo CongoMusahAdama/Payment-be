@@ -82,25 +82,6 @@ router.post("/request-money", authMiddleware, requestMoney);
  *     security:
  *       - bearerAuth: []
  *     description: Retrieves the transaction history for the authenticated user.
- *     parameters:
- *       - in: query
- *         name: startDate
- *         schema:
- *           type: string
- *           format: date
- *         description: Start date for filtering transactions.
- *       - in: query
- *         name: endDate
- *         schema:
- *           type: string
- *           format: date
- *         description: End date for filtering transactions.
- *       - in: query
- *         name: transactionType
- *         schema:
- *           type: string
- *           enum: [transfer, request]
- *         description: Type of transaction to filter (transfer or request).
  *     responses:
  *       200:
  *         description: Successfully retrieved transaction history.
@@ -129,6 +110,7 @@ router.post("/request-money", authMiddleware, requestMoney);
  *                         description: Status of the transaction.
  *       400:
  *         description: Invalid request.
+
  */
 router.get("/history", authMiddleware, getTransactionHistory);
 

@@ -64,7 +64,7 @@ export const initiateDeposit = async (user, amount) => {
 export const processWithdrawal = async (recipientCode, amount) => {
   try {
     const response = await axios.post(
-      `${process.env.PAYSTACK_BASE_URL}/transfer`,
+      `${PAYSTACK_BASE_URL}/transfer`,  
       {
         source: "balance",
         reason: "Withdrawal",
@@ -73,7 +73,7 @@ export const processWithdrawal = async (recipientCode, amount) => {
       },
       {
         headers: {
-          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
           "Content-Type": "application/json",
         },
       }
@@ -84,5 +84,22 @@ export const processWithdrawal = async (recipientCode, amount) => {
   } catch (error) {
     console.error("❌ Paystack Error:", error.response?.data || error.message);
     throw new Error(error.response?.data?.message || "Withdrawal failed");
+  }
+};
+
+export const verifyWithdrawalStatus = async (transferCode) => {
+  try {
+    const response = await axios.get(`https://api.paystack.co/transfer/${transferCode}`, {
+      headers: {
+        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("✅ Withdrawal Status Response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error verifying withdrawal status:", error.response?.data || error.message);
+    throw new Error("Failed to verify withdrawal status");
   }
 };

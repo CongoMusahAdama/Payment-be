@@ -24,13 +24,14 @@ const swaggerOptions = {
                 description: 'User profile operations',
             },
             {
-                name: 'Money Transfer Management',
-                description: 'Money transfer operations',
-            },
-            {
                 name: 'Payment Management',
                 description: 'Payment operations',
             },
+            {
+                name: 'Money Transfer Management',
+                description: 'Money transfer operations',
+            },
+            
             {
                 name: 'Report Management',
                 description: 'Report generation and downloading operations',

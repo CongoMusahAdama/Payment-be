@@ -1,4 +1,5 @@
-import User from '../models/user.js';
+import User from '../models/user.js'; 
+import Wallet from '../models/wallet.js';  // ✅ Import Wallet model
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -7,20 +8,26 @@ class UserService {
         this.invalidatedTokens = new Set(); // Store invalidated tokens
     }
 
-    
-    
-async register(Fullname, email, password, phone, address) {
 
+    async register(Fullname, email, password, phone, address) {
+        // Check if user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             throw new Error('User already exists');
         }
 
+        // Hash password before saving
         const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ Fullname, email, password: hashedPassword, phone, address });
 
+        // Create and save new user
+        const newUser = new User({ Fullname, email, password: hashedPassword, phone, address });
         await newUser.save();
-        return newUser;
+
+        // ✅ Automatically create wallet for the user
+        const newWallet = new Wallet({ user: newUser._id, balance: 0 });
+        await newWallet.save();
+
+        return newUser; // Return the user object
     }
 
     async login(email, password) {

@@ -8,8 +8,8 @@
 - **Request Body:**
 ```json
 {
-  "amount": <amount>, // Amount to deposit (e.g., 1000)
-  "currency": "<currency>" // Currency of the deposit (e.g., "NGN")
+ "email":"youremail@gmail.com",
+  "amount": 300
 }
 ```
 - **Response:**
@@ -35,10 +35,7 @@
 - **Response:**
   - **Success (200):**
     ```json
-    {
-      "message": "Payment verified",
-      "payment": { /* payment details */ }
-    }
+   {"message":"Payment verified","payment":{"_id":"67e15db32aee3ffd087068cc","user":"67e159bc69a0eb546ff89e8b","amount":300,"paymentMethod":"paystack","status":"completed","reference":"77iobwyy9v","createdAt":"2025-03-24T13:27:15.954Z","updatedAt":"2025-03-24T13:29:08.177Z","__v":0}}
     ```
   - **Error (400):**
     ```json
@@ -57,7 +54,6 @@
 {
   "recipientCode": "<recipient_code>", // Code of the recipient
   "amount": <amount>, // Amount to withdraw (e.g., 500)
-  "currency": "<currency>" // Currency of the withdrawal (e.g., "NGN")
 }
 ```
 - **Response:**
