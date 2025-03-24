@@ -1,4 +1,10 @@
-import { initiateDeposit, confirmDeposit, initiateWithdrawal, verifyWithdrawalStatus, handleWebhookUpdated } from "../services/paymentService.js";
+import {
+  initiateDeposit,
+  confirmDeposit,
+  initiateWithdrawal,
+  verifyWithdrawalStatus,
+  handleWebhookUpdated,
+} from "../services/paymentService.js";
 import User from "../models/user.js";
 import Wallet from "../models/wallet.js"; // Import Wallet model
 import Transaction from "../models/transaction.js";
@@ -9,41 +15,36 @@ import crypto from "crypto";
  */
 export const depositFunds = async (req, res) => {
   try {
-      console.log("📌 Received deposit request:", req.body);
-      
-      const { amount } = req.body;
-      const user = req.user;
+    console.log("📌 Received deposit request:", req.body);
 
-      console.log("📌 Authenticated user:", user); // Log user object for debugging
+    const { amount } = req.body;
+    const user = req.user;
 
+    console.log("📌 Authenticated user:", user); // Log user object for debugging
 
-      if (!user || !user.email) {
-          console.error("🚨 Error: User email is missing in depositFunds");
-          return res.status(400).json({ message: "User email is required for payment" });
-      }
+    if (!user || !user.email) {
+      console.error("🚨 Error: User email is missing in depositFunds");
+      return res.status(400).json({ message: "User email is required for payment" });
+    }
 
-      const { reference, authorizationUrl } = await initiateDeposit(user, amount);
-      
-      // Check if the user's wallet exists, if not create one
-      let wallet = await Wallet.findOne({ user: user.id });
-      if (!wallet) {
-          wallet = new Wallet({ user: user.id, balance: 0 });
-          await wallet.save();
-      }
+    const url = await initiateDeposit(user, amount);
 
+    // Check if the user's wallet exists, if not create one
+    let wallet = await Wallet.findOne({ user: user.id });
+    if (!wallet) {
+      wallet = new Wallet({ user: user.id, balance: Number(amount) });
+      await wallet.save();
+    }
 
-      return res.status(200).json({
-          message: "Deposit initiated successfully",
-          reference,
-          authorizationUrl, // This is where the user should be redirected
-      });
-
+    return res.status(200).json({
+      message: "Deposit initiated successfully",
+      authorizationUrl: url, // This is where the user should be redirected
+    });
   } catch (error) {
-      console.error("🚨 Error processing deposit:", error);
-      return res.status(500).json({ message: "Deposit failed" });
+    console.error("🚨 Error processing deposit:", error);
+    return res.status(500).json({ message: "Deposit failed" });
   }
 };
-
 
 /**
  * Verify Deposit
@@ -112,7 +113,7 @@ export const getUserBalance = async (req, res) => {
 
     // Find wallet associated with the user
     const wallet = await Wallet.findOne({ user: req.user.id });
-    
+
     if (!wallet) {
       console.log("Wallet not found for user ID:", req.user.id);
       return res.status(404).json({ message: "Wallet not found" });
@@ -160,7 +161,7 @@ export const withdrawFunds = async (req, res) => {
       return res.status(202).json({
         message: "OTP required for withdrawal. Please verify your Paystack OTP.",
         reference: withdrawalResponse.reference,
-        transfer_code: withdrawalResponse.transfer_code
+        transfer_code: withdrawalResponse.transfer_code,
       });
     }
 
@@ -169,7 +170,7 @@ export const withdrawFunds = async (req, res) => {
     if (statusResponse.data.status !== "success") {
       return res.status(400).json({
         message: "Withdrawal failed. Please verify your OTP and try again.",
-        status: statusResponse.data.status
+        status: statusResponse.data.status,
       });
     }
 
@@ -180,7 +181,7 @@ export const withdrawFunds = async (req, res) => {
       amount,
       transactionType: "withdrawal",
       status: "completed",
-      reference: withdrawalResponse.reference
+      reference: withdrawalResponse.reference,
     });
 
     await transaction.save();
@@ -191,7 +192,6 @@ export const withdrawFunds = async (req, res) => {
     await User.findByIdAndUpdate(req.user.id, { $push: { transactions: transaction._id } });
 
     res.status(200).json({ message: "Withdrawal successful", balance: wallet.balance, transaction });
-
   } catch (error) {
     console.error("❌ Withdrawal processing failed:", error.message);
     res.status(500).json({ message: "Withdrawal failed", error: error.message });

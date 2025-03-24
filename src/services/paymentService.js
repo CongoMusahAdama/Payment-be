@@ -2,10 +2,10 @@ import { initializePayment, verifyPayment, processWithdrawal } from "../config/p
 
 import Payment from "../models/payment.js";
 import Wallet from "../models/wallet.js";
-import Transaction from "../models/transaction.js"; 
-import User from "../models/user.js"; 
-import mongoose from "mongoose"; 
-import axios from "axios"; 
+import Transaction from "../models/transaction.js";
+import User from "../models/user.js";
+import mongoose from "mongoose";
+import axios from "axios";
 
 /**
  * Verify Withdrawal Status
@@ -34,7 +34,7 @@ export const verifyWithdrawalStatus = async (transferCode) => {
  */
 export const initiateDeposit = async (user, amount) => {
   try {
-    const callbackUrl = process.env.PAYSTACK_CALLBACK_URL || "http://localhost:3000/payment-success";
+    const callbackUrl = process.env.PAYSTACK_CALLBACK_URL || "http://localhost:5173/payment-success";
 
     console.log("📌 Initiating payment with:", { email: user.email, amount, callbackUrl });
 
@@ -152,7 +152,7 @@ export const initiateWithdrawal = async (user, recipientCode, amount) => {
       return {
         message: "OTP required for withdrawal. Please verify your Paystack OTP.",
         reference: withdrawalResponse.data.reference,
-        transfer_code: withdrawalResponse.data.transfer_code
+        transfer_code: withdrawalResponse.data.transfer_code,
       };
     }
 
@@ -190,7 +190,7 @@ export const initiateWithdrawal = async (user, recipientCode, amount) => {
     return {
       message: "Withdrawal successful",
       updatedBalance: wallet.balance,
-      transaction
+      transaction,
     };
   } catch (error) {
     console.error("❌ Error initiating withdrawal:", error.message);
@@ -204,7 +204,6 @@ export const initiateWithdrawal = async (user, recipientCode, amount) => {
 };
 
 export const handleWebhookUpdated = async (event) => {
-
   try {
     console.log("🔔 Webhook Event Received:", event.event);
 
