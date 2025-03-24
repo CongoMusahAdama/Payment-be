@@ -1,6 +1,7 @@
 import { initializePayment, verifyPayment, processWithdrawal } from "../config/paystack.js";
 import Payment from "../models/payment.js";
 import Wallet from "../models/wallet.js";
+import mongoose from "mongoose"; // Import mongoose
 
 /**
  * Initiate Deposit via Paystack
@@ -71,7 +72,20 @@ export const confirmDeposit = async (reference) => {
     let wallet = await Wallet.findOne({ user: payment.user });
     
     if (!wallet) {
-      console.log("🆕 No wallet found, creating a new one...");
+    console.log("🆕 No wallet found, creating a new one...");
+    wallet = new Wallet({
+        user: payment.user,
+        balance: 0, // Start from zero
+    });
+    await wallet.save(); // Save the newly created wallet
+    console.log("✅ New wallet created and saved.");
+
+    wallet = new Wallet({
+        user: payment.user,
+        balance: 0, // Start from zero
+    });
+    await wallet.save(); // Save the newly created wallet
+
       wallet = new Wallet({
         user: payment.user,
         balance: 0, // Start from zero
@@ -126,7 +140,8 @@ export const getUserProfile = async (user) => {
     if (!wallet) throw new Error("Wallet not found");
     return { balance: wallet.balance }; // Return the user's balance
   } catch (error) {
-    throw new Error("Unable to retrieve user profile");
+    throw new Error(`Unable to retrieve user profile: ${error.message}`);
+
   }
 };
 

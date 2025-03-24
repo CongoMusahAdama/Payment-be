@@ -1,5 +1,7 @@
 import { initiateDeposit, confirmDeposit, initiateWithdrawal, handleWebhook } from "../services/paymentService.js";
 import User from "../models/user.js";
+import Wallet from "../models/wallet.js"; // Import Wallet model
+
 import crypto from "crypto";
 
 /**
@@ -122,8 +124,9 @@ export const withdrawFunds = async (req, res) => {
  */
 export const getUserBalance = async (user) => {
   try {
-    const userData = await User.findById(user.id); // Assuming user.id is the identifier
-    return userData.balance; // Assuming balance is a field in the User model
+    const balance = await Wallet.getUserBalance(user.id); // Fetch balance from Wallet model
+    return balance; // Return the balance retrieved from the wallet
+
   } catch (error) {
     throw new Error("Unable to retrieve user balance");
   }
