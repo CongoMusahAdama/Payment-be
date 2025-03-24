@@ -2,7 +2,6 @@ import { transferFundsService, requestMoneyService, getUserTransactions } from "
 import mongoose from "mongoose"; // Import mongoose for ObjectId validation
 import Transaction from "../models/transaction.js";
 
-
 // ✅ Handle Money Transfers
 export const transferFunds = async (req, res) => {
   try {
@@ -12,7 +11,7 @@ export const transferFunds = async (req, res) => {
     console.log("Received Request Body:", req.body);
     console.log("Sender ID (from token):", senderId);
 
-    if (!recipientId || typeof recipientId !== 'string') {
+    if (!recipientId || typeof recipientId !== "string") {
       console.log("Invalid Recipient ID Format:", recipientId);
       return res.status(400).json({ message: "Invalid recipient ID format" });
     }
@@ -26,18 +25,14 @@ export const transferFunds = async (req, res) => {
   }
 };
 
-
 // ✅ Handle Money Requests
 export const requestMoney = async (req, res) => {
   try {
-    const { recipientId, requesterId, amount, note } = req.body; 
-
+    const { recipientId, requesterId, amount, note } = req.body;
 
     //const requesterId = req.user._id;
 
-    const moneyRequest = await requestMoneyService(requesterId, recipientId, amount, note); 
-
-
+    const moneyRequest = await requestMoneyService(requesterId, recipientId, amount, note);
 
     res.status(200).json({ message: "Money request sent", request: moneyRequest });
   } catch (error) {
@@ -50,12 +45,12 @@ export const getTransactionHistory = async (req, res) => {
   try {
     const userId = req.user._id;
 
-
     const transactions = await getUserTransactions(userId);
-
 
     res.status(200).json({ message: "Transaction history retrieved", transactions });
   } catch (error) {
+    console.log("Error:", error.message);
+
     res.status(400).json({ message: error.message });
   }
 };

@@ -2,10 +2,7 @@ import User from "../models/user.js";
 import Transaction from "../models/transaction.js";
 import MoneyRequest from "../models/MoneyRequest.js"; // Import MoneyRequest model
 import Wallet from "../models/wallet.js";
-import mongoose from "mongoose"; 
-
- 
-
+import mongoose from "mongoose";
 
 // ✅ Secure Fund Transfer
 export const transferFundsService = async (senderId, recipientId, amount) => {
@@ -21,8 +18,6 @@ export const transferFundsService = async (senderId, recipientId, amount) => {
   const senderWallet = await Wallet.findOne({ user: senderId });
   if (!senderWallet) throw new Error("Sender's wallet not found");
 
- 
-
   if (senderWallet.balance < amount) throw new Error("Insufficient funds");
 
   // Deduct amount from sender's wallet
@@ -37,7 +32,6 @@ export const transferFundsService = async (senderId, recipientId, amount) => {
   recipientWallet.balance += amount;
   await recipientWallet.save();
 
-
   // Create transaction record
   const transaction = new Transaction({
     sender: senderId,
@@ -45,7 +39,7 @@ export const transferFundsService = async (senderId, recipientId, amount) => {
     transactionType: "transfer",
     amount,
     status: "completed",
-    reference: `TXN-${Date.now()}`
+    reference: `TXN-${Date.now()}`,
   });
 
   await transaction.save();
@@ -53,13 +47,11 @@ export const transferFundsService = async (senderId, recipientId, amount) => {
   return transaction;
 };
 
-
-
 // ✅ Money Request Functionality
 export const requestMoneyService = async (requesterId, recipientId, amount, note) => {
   if (amount <= 0) throw new Error("Requested amount must be greater than zero");
 
-const moneyRequest = new MoneyRequest({
+  const moneyRequest = new MoneyRequest({
     requesterId: requesterId, // The person requesting the money
     recipientId: recipientId, // The person being asked to send money
 
@@ -69,24 +61,26 @@ const moneyRequest = new MoneyRequest({
     transactionType: "request",
 
     reference: `REQ-${Date.now()}`,
-    note
+    note,
   });
 
   await moneyRequest.save();
   return moneyRequest;
 };
 
-
 // ✅ Get User Transaction History with Filters
 export const getUserTransactions = async (userId, filters) => {
   const query = { $or: [{ sender: userId }, { recipient: userId }] };
 
   // Apply filters
-  if (filters.startDate && filters.endDate) {
-    query.createdAt = { $gte: new Date(filters.startDate), $lte: new Date(filters.endDate) };
-  }
-  if (filters.transactionType) {
-    query.transactionType = filters.transactionType;
+  if (filters && Object.keys(filters).length > 0) {
+    if (filters.startDate && filters.endDate) {
+      query.createdAt = { $gte: new Date(filters.startDate), $lte: new Date(filters.endDate) };
+    }
+
+    if (filters.transactionType) {
+      query.transactionType = filters.transactionType;
+    }
   }
 
   const transactions = await Transaction.find(query).sort({ createdAt: -1 }); // Latest first
