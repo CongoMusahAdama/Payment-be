@@ -78,9 +78,6 @@ router.get("/verify", verifyDeposit);
  *           schema:
  *             type: object
  *             properties:
- *               recipientCode:
- *                 type: string
- *                 description: The code of the recipient
  *               amount:
  *                 type: number
  *                 description: The amount to withdraw

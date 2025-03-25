@@ -152,9 +152,9 @@
 - **Body**:
 ```json
 {
-  "recipientCode": "<recipient_code>",
-  "amount": 500,
-  "currency": "NGN"
+  
+  "amount": 500
+ 
 }
 ```
 

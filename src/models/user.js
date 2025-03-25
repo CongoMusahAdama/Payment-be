@@ -29,6 +29,10 @@ const userSchema = new mongoose.Schema({
         unique: true, 
         required: true 
     },
+    recipientCode: { 
+        type: String, 
+        default: null // Store Paystack recipient code
+    },
     wallet: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Wallet',

@@ -1,10 +1,10 @@
 import {
   initiateDeposit,
   confirmDeposit,
-  initiateWithdrawal,
   verifyWithdrawalStatus,
   handleWebhookUpdated,
 } from "../services/paymentService.js";
+
 import User from "../models/user.js";
 import Wallet from "../models/wallet.js"; // Import Wallet model
 import Transaction from "../models/transaction.js";
@@ -92,7 +92,8 @@ export const handleWebhookController = async (req, res) => {
     console.log("📌 Webhook Event:", req.body.event);
 
     // Call the updated handleWebhook function
-    await handleWebhookUpdated(req.body);
+    await handleWebhookUpdated(req, res);
+
 
     return res.status(200).json({ message: "Webhook processed successfully" });
   } catch (error) {
@@ -135,8 +136,8 @@ export const withdrawFunds = async (req, res) => {
       return res.status(401).json({ message: "Unauthorized: User not found in request" });
     }
 
-    const { recipientCode, amount, otp } = req.body;
-    if (!recipientCode || !amount || amount <= 0) {
+    const { amount, otp } = req.body;
+    if (!amount || amount <= 0) {
       return res.status(400).json({ message: "Invalid withdrawal request." });
     }
 
@@ -148,6 +149,20 @@ export const withdrawFunds = async (req, res) => {
 
     console.log("✅ User verified:", user);
 
+    // **Step 1: Ensure user has a Paystack recipientCode**
+    let recipientCode = user.recipientCode;
+    
+    if (!recipientCode) {
+      console.log("🔍 No recipientCode found, creating a new one...");
+      recipientCode = await createPaystackRecipient(user);
+
+      // Save the new recipientCode in the user profile
+      user.recipientCode = recipientCode;
+      await user.save();
+    }
+
+    console.log("✅ Using recipientCode:", recipientCode);
+
     // Find user's wallet
     const wallet = await Wallet.findOne({ user: req.user.id });
     if (!wallet || wallet.balance < amount) {
@@ -156,6 +171,7 @@ export const withdrawFunds = async (req, res) => {
 
     // **Step 1: Initiate Withdrawal**
     const withdrawalResponse = await initiateWithdrawal(req.user, recipientCode, amount, otp);
+
 
     if (withdrawalResponse.status === "otp") {
       return res.status(202).json({

@@ -1,4 +1,4 @@
-import { initializePayment, verifyPayment, processWithdrawal } from "../config/paystack.js";
+import { initializePayment, verifyPayment, createPaystackRecipient } from "../config/paystack.js";
 
 import Payment from "../models/payment.js";
 import Wallet from "../models/wallet.js";
@@ -127,100 +127,114 @@ export const confirmDeposit = async (reference) => {
 };
 
 /**
- * Process Withdrawals
+ * Handle Webhook Updates
  */
-export const initiateWithdrawal = async (user, recipientCode, amount) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
+export const handleWebhookUpdated = async (req, res) => {
+  const webhookData = req.body;
 
+  // Log the webhook data for debugging
+  console.log("Received webhook update:", webhookData);
+
+  // Process the webhook data (this will depend on the structure of the data)
+  // Example: Update payment status based on the webhook event
+  if (webhookData.event === "charge.success") {
+    const payment = await Payment.findOne({ reference: webhookData.data.reference });
+    if (payment) {
+      payment.status = "completed";
+      await payment.save();
+      console.log("Payment status updated to completed for reference:", webhookData.data.reference);
+    }
+  }
+
+  // Respond to the webhook
+  res.status(200).send("Webhook received");
+};
+
+
+
+
+export const withdrawFunds = async (req, res) => {
   try {
-    if (!amount || amount <= 0) throw new Error("Invalid withdrawal amount");
+    console.log("🔍 Received withdrawal request from:", req.user);
 
-    // **Step 1: Find Wallet**
-    const wallet = await Wallet.findOne({ user: user._id }).session(session);
-    if (!wallet) throw new Error("Wallet not found");
-    if (wallet.balance < amount) throw new Error("Insufficient balance");
-
-    // **Step 2: Call Paystack Withdrawal API**
-    const withdrawalResponse = await processWithdrawal(recipientCode, amount);
-
-    if (!withdrawalResponse || !withdrawalResponse.data) {
-      throw new Error("Failed to process withdrawal");
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Unauthorized: User not found in request" });
     }
 
-    if (withdrawalResponse.data.status === "otp") {
-      return {
+    const { amount, otp } = req.body;
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ message: "Invalid withdrawal request." });
+    }
+
+    // Check if the user exists
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found in database" });
+    }
+
+    console.log("✅ User verified:", user);
+
+    // **Step 1: Ensure user has a Paystack recipientCode**
+    let recipientCode = user.recipientCode;
+    
+    if (!recipientCode) {
+      console.log("🔍 No recipientCode found, creating a new one...");
+      recipientCode = await createPaystackRecipient(user);
+
+      // Save the new recipientCode in the user profile
+      user.recipientCode = recipientCode;
+      await user.save();
+    }
+
+    console.log("✅ Using recipientCode:", recipientCode);
+
+    // **Step 2: Find User's Wallet**
+    const wallet = await Wallet.findOne({ user: req.user.id });
+    if (!wallet || wallet.balance < amount) {
+      return res.status(400).json({ message: "Insufficient funds or wallet not found" });
+    }
+
+    // **Step 3: Initiate Withdrawal**
+    const withdrawalResponse = await initiateWithdrawal(req.user, recipientCode, amount, otp);
+
+    if (withdrawalResponse.status === "otp") {
+      return res.status(202).json({
         message: "OTP required for withdrawal. Please verify your Paystack OTP.",
-        reference: withdrawalResponse.data.reference,
-        transfer_code: withdrawalResponse.data.transfer_code,
-      };
+        reference: withdrawalResponse.reference,
+        transfer_code: withdrawalResponse.transfer_code,
+      });
     }
 
-    // **Step 3: Verify Withdrawal Status**
-    const statusResponse = await verifyWithdrawalStatus(withdrawalResponse.data.transfer_code);
-
-    if (statusResponse.status !== "success") {
-      throw new Error("Withdrawal verification failed. Please verify your OTP and try again.");
+    // **Step 4: Verify Withdrawal**
+    const statusResponse = await verifyWithdrawalStatus(withdrawalResponse.transfer_code);
+    if (statusResponse.data.status !== "success") {
+      return res.status(400).json({
+        message: "Withdrawal failed. Please verify your OTP and try again.",
+        status: statusResponse.data.status,
+      });
     }
 
-    // **Step 4: Deduct Balance from Wallet**
-    wallet.balance -= amount;
-    await wallet.save({ session });
-
-    // **Step 5: Create Transaction Record**
+    // **Step 5: Update Transaction & Wallet**
     const transaction = new Transaction({
-      sender: user._id,
+      sender: req.user.id,
       recipient: recipientCode,
       amount,
       transactionType: "withdrawal",
       status: "completed",
-      reference: withdrawalResponse.data.reference,
+      reference: withdrawalResponse.reference,
     });
 
-    await transaction.save({ session });
+    await transaction.save();
+    wallet.balance -= amount;
+    await wallet.save();
 
-    // **Step 6: Link Transaction to User & Wallet**
-    await User.findByIdAndUpdate(user._id, { $push: { transactions: transaction._id } }, { session });
-    await Wallet.findOneAndUpdate({ user: user._id }, { $push: { transactions: transaction._id } }, { session });
+    // **Step 6: Link Transaction to User**
+    await User.findByIdAndUpdate(req.user.id, { $push: { transactions: transaction._id } });
 
-    // **Step 7: Commit the Transaction**
-    await session.commitTransaction();
-    session.endSession();
+    res.status(200).json({ message: "Withdrawal successful", balance: wallet.balance, transaction });
 
-    return {
-      message: "Withdrawal successful",
-      updatedBalance: wallet.balance,
-      transaction,
-    };
   } catch (error) {
-    console.error("❌ Error initiating withdrawal:", error.message);
-
-    // **Rollback Transaction on Error**
-    await session.abortTransaction();
-    session.endSession();
-
-    throw new Error(error.message || "Withdrawal process failed");
-  }
-};
-
-export const handleWebhookUpdated = async (event) => {
-  try {
-    console.log("🔔 Webhook Event Received:", event.event);
-
-    if (event.event !== "charge.success") return;
-
-    const payment = await Payment.findOne({ reference: event.data.reference });
-    if (payment && payment.status !== "successful") {
-      payment.status = "successful";
-      await payment.save();
-
-      const wallet = await Wallet.findOne({ user: payment.user });
-      if (wallet) {
-        wallet.balance += payment.amount;
-        await wallet.save();
-      }
-    }
-  } catch (error) {
-    console.error("🚨 Error handling webhook:", error);
+    console.error("❌ Withdrawal processing failed:", error.message);
+    res.status(500).json({ message: "Withdrawal failed", error: error.message });
   }
 };
