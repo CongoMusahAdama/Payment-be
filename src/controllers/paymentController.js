@@ -4,7 +4,7 @@ import {
   verifyWithdrawalStatus,
   handleWebhookUpdated,
 } from "../services/paymentService.js";
-
+import { createPaystackRecipient } from "../config/paystack.js"; 
 import User from "../models/user.js";
 import Wallet from "../models/wallet.js"; // Import Wallet model
 import Transaction from "../models/transaction.js";
