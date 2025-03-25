@@ -150,8 +150,33 @@ export const handleWebhookUpdated = async (req, res) => {
   res.status(200).send("Webhook received");
 };
 
+/**
+ * Initiate Withdrawal via Paystack
+ */
+export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
+  try {
+    const response = await axios.post("https://api.paystack.co/transfer", {
+      recipient: recipientCode,
+      amount: amount * 100, // Paystack expects the amount in kobo
+      currency: "NGN",
+      reason: "Withdrawal request",
+      otp: otp, // Include OTP if required
+    }, {
+      headers: {
+        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+      },
+    });
 
+    if (!response.data || response.data.status !== true) {
+      throw new Error("Failed to initiate withdrawal");
+    }
 
+    return response.data.data; // Returns the withdrawal response data
+  } catch (error) {
+    console.error("🚨 Error initiating withdrawal:", error.message);
+    throw new Error("Withdrawal initiation failed");
+  }
+};
 
 export const withdrawFunds = async (req, res) => {
   try {
