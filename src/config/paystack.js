@@ -9,6 +9,8 @@ export const PAYSTACK_BASE_URL = process.env.PAYSTACK_BASE_URL || "https://api.p
 
 // Log the PAYSTACK_BASE_URL for debugging
 console.log("🚀 Using PAYSTACK_BASE_URL:", PAYSTACK_BASE_URL);
+console.log("✅ PAYSTACK_SECRET_KEY:", process.env.PAYSTACK_SECRET_KEY ? "Loaded" : "Missing");
+
 
 // Function to initialize a payment
 export const initializePayment = async (email, amount, callbackUrl) => {
