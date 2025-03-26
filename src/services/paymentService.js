@@ -167,8 +167,7 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
       recipient: recipientCode,
       amount: amount * 100, // Paystack expects the amount in kobo
       currency: "NGN",
-      reason: "Withdrawal request",
-      otp: otp // Include OTP if required
+      reason: "Withdrawal request"
     }, {
       headers: {
         Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
