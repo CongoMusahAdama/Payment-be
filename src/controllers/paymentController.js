@@ -206,59 +206,89 @@ export const verifyOtp = async (req, res) => {
 
     const { amount, otp } = req.body;
     if (!amount || amount <= 0 || !otp) {
-      return res.status(400).json({ message: "Invalid verification request." });
+      return res.status(400).json({ message: "Invalid verification request. Amount and OTP are required." });
     }
 
+    // Find user
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ message: "User not found in database" });
     }
-
     console.log("✅ User verified:", user);
 
+    // Ensure recipientCode exists
     let recipientCode = user.recipientCode;
     if (!recipientCode) {
       return res.status(400).json({ message: "Recipient code missing. Please request OTP first." });
     }
-
     console.log("✅ Using recipientCode:", recipientCode);
 
+    // Find user's wallet
     const wallet = await Wallet.findOne({ user: req.user.id });
     if (!wallet || wallet.balance < amount) {
       return res.status(400).json({ message: "Insufficient funds or wallet not found" });
     }
 
-    const withdrawalResponse = await initiateWithdrawal(req.user, recipientCode, amount, otp);
+    // 🔥 **Retrieve the latest transfer_code for this user**
+    const latestTransaction = await Transaction.findOne({
+      sender: req.user.id,
+      amount,
+      transactionType: "withdrawal",
+      status: "otp" // Only look for pending OTP withdrawals
+    }).sort({ createdAt: -1 });
 
-    const statusResponse = await verifyWithdrawalStatus(withdrawalResponse.transfer_code);
-    console.log("📌 Status Response:", statusResponse); // Log the status response for debugging
-    if (!statusResponse || statusResponse.data.status !== "success") {
+    if (!latestTransaction || !latestTransaction.reference) {
+      return res.status(400).json({ message: "No pending withdrawal found for this amount." });
+    }
 
+    const transfer_code = latestTransaction.reference; // Get stored transfer_code
+    console.log("✅ Using stored transfer_code:", transfer_code);
+
+    // 🔥 **Step 1: Send OTP verification request to Paystack**
+    const response = await axios.post(
+      "https://api.paystack.co/transfer/finalize_transfer",
+      {
+        transfer_code,
+        otp
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    console.log("📌 Paystack Response:", response.data);
+
+    if (!response.data || response.data.status !== true) {
       return res.status(400).json({
-        message: "Withdrawal failed. Please verify your OTP and try again.",
-        status: statusResponse.data.status,
+        message: "OTP verification failed. Please check your OTP and try again.",
+        error: response.data.message || "Unknown error"
       });
     }
 
-    const transaction = new Transaction({
-      sender: req.user.id,
-      recipient: recipientCode,
-      amount,
-      transactionType: "withdrawal",
-      status: "completed",
-      reference: withdrawalResponse.reference,
-    });
+    // 🔥 **Step 2: Update transaction and wallet**
+    latestTransaction.status = "completed";
+    await latestTransaction.save();
 
-    await transaction.save();
     wallet.balance -= amount;
     await wallet.save();
 
-    await User.findByIdAndUpdate(req.user.id, { $push: { transactions: transaction._id } });
+    await User.findByIdAndUpdate(req.user.id, { $push: { transactions: latestTransaction._id } });
 
-    res.status(200).json({ message: "Withdrawal successful", balance: wallet.balance, transaction });
+    res.status(200).json({
+      message: "Withdrawal successful!",
+      transfer_code: response.data.data.transfer_code,
+      balance: wallet.balance,
+      transaction: latestTransaction
+    });
 
   } catch (error) {
     console.error("❌ OTP verification processing failed:", error.message);
-    res.status(500).json({ message: "OTP verification failed", error: error.message });
+    res.status(500).json({
+      message: "OTP verification failed",
+      error: error.response?.data?.message || error.message
+    });
   }
 };
