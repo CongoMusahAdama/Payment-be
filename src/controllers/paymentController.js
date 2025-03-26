@@ -139,12 +139,12 @@ export const requestOtp = async (req, res) => {
       return res.status(401).json({ message: "Unauthorized: User not found in request" });
     }
 
-    const { amount } = req.body;
-    if (!amount || amount <= 0) {
-      return res.status(400).json({ message: "Invalid withdrawal request." });
+    const amount = Number(req.body.amount);
+    if (isNaN(amount) || amount <= 0) {
+      return res.status(400).json({ message: "Invalid withdrawal amount." });
     }
 
-    // Check if the user exists in the database
+    // Check if user exists
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ message: "User not found in database" });
@@ -152,14 +152,11 @@ export const requestOtp = async (req, res) => {
 
     console.log("✅ User verified:", user);
 
-    // **Step 1: Ensure user has a Paystack recipientCode**
+    // Ensure user has a recipientCode
     let recipientCode = user.recipientCode;
-    
     if (!recipientCode) {
       console.log("🔍 No recipientCode found, creating a new one...");
       recipientCode = await createPaystackRecipient(user);
-
-      // Save the new recipientCode in the user profile
       user.recipientCode = recipientCode;
       await user.save();
     }
@@ -172,14 +169,18 @@ export const requestOtp = async (req, res) => {
       return res.status(400).json({ message: "Insufficient funds or wallet not found" });
     }
 
-    // **Step 1: Initiate Withdrawal**
-    const withdrawalResponse = await initiateWithdrawal(recipientCode, amount, undefined);
+    // Initiate withdrawal without OTP
+    const withdrawalResponse = await initiateWithdrawal(req.user, recipientCode, amount, null);
 
-    return res.status(202).json({
-      message: "OTP sent. Please verify your Paystack OTP.",
-      reference: withdrawalResponse.reference,
-      transfer_code: withdrawalResponse.transfer_code,
-    });
+    if (withdrawalResponse.status === "otp") {
+      return res.status(202).json({
+        message: "OTP sent. Please verify your Paystack OTP.",
+        reference: withdrawalResponse.reference,
+        transfer_code: withdrawalResponse.transfer_code,
+      });
+    }
+
+    res.status(400).json({ message: "Withdrawal request failed. Please try again." });
 
   } catch (error) {
     console.error("❌ OTP request processing failed:", error.message);
@@ -203,7 +204,6 @@ export const verifyOtp = async (req, res) => {
       return res.status(400).json({ message: "Invalid verification request." });
     }
 
-    // Check if the user exists in the database
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ message: "User not found in database" });
@@ -211,38 +211,20 @@ export const verifyOtp = async (req, res) => {
 
     console.log("✅ User verified:", user);
 
-    // **Step 1: Ensure user has a Paystack recipientCode**
     let recipientCode = user.recipientCode;
-    
     if (!recipientCode) {
-      console.log("🔍 No recipientCode found, creating a new one...");
-      recipientCode = await createPaystackRecipient(user);
-
-      // Save the new recipientCode in the user profile
-      user.recipientCode = recipientCode;
-      await user.save();
+      return res.status(400).json({ message: "Recipient code missing. Please request OTP first." });
     }
 
     console.log("✅ Using recipientCode:", recipientCode);
 
-    // Find user's wallet
     const wallet = await Wallet.findOne({ user: req.user.id });
     if (!wallet || wallet.balance < amount) {
       return res.status(400).json({ message: "Insufficient funds or wallet not found" });
     }
 
-    // **Step 2: Initiate Withdrawal**
-    console.log("📤 Withdrawal request payload:", {
-      recipient: recipientCode,
-      amount: amount * 100, // Paystack expects the amount in kobo
-      currency: "NGN",
-      reason: "Withdrawal request",
-      otp: otp, 
-    });
-
     const withdrawalResponse = await initiateWithdrawal(req.user, recipientCode, amount, otp);
 
-    // **Step 3: Verify Withdrawal**
     const statusResponse = await verifyWithdrawalStatus(withdrawalResponse.transfer_code);
     if (statusResponse.data.status !== "success") {
       return res.status(400).json({
@@ -251,7 +233,6 @@ export const verifyOtp = async (req, res) => {
       });
     }
 
-    // **Step 4: Update Transaction & Wallet**
     const transaction = new Transaction({
       sender: req.user.id,
       recipient: recipientCode,
@@ -265,10 +246,10 @@ export const verifyOtp = async (req, res) => {
     wallet.balance -= amount;
     await wallet.save();
 
-    // **Step 5: Link Transaction to User**
     await User.findByIdAndUpdate(req.user.id, { $push: { transactions: transaction._id } });
 
     res.status(200).json({ message: "Withdrawal successful", balance: wallet.balance, transaction });
+
   } catch (error) {
     console.error("❌ OTP verification processing failed:", error.message);
     res.status(500).json({ message: "OTP verification failed", error: error.message });

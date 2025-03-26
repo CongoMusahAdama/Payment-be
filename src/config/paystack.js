@@ -176,3 +176,44 @@ export const createPaystackRecipient = async (user) => {
         throw new Error("Recipient creation failed");
     }
 };
+
+/**
+ * Initiate Withdrawal via Paystack
+ */
+export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
+  try {
+    const validAmount = Number(amount);
+    if (isNaN(validAmount) || validAmount <= 0) {
+      throw new Error("Invalid withdrawal amount");
+    }
+
+    console.log("📤 Withdrawal request payload:", {
+      recipient: recipientCode,
+      amount: validAmount * 100, 
+      currency: "NGN",
+      reason: "Withdrawal request",
+      otp: otp,
+    });
+
+    const response = await axios.post(`${PAYSTACK_BASE_URL}/transfer`, {
+      recipient: recipientCode,
+      amount: validAmount * 100, 
+      currency: "NGN",
+      reason: "Withdrawal request",
+      otp: otp,
+    }, {
+      headers: {
+        Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+      },
+    });
+
+    if (!response.data || response.data.status !== true) {
+      throw new Error("Failed to initiate withdrawal");
+    }
+
+    return response.data.data;
+  } catch (error) {
+    console.error("🚨 Error initiating withdrawal:", error.message);
+    throw new Error("Withdrawal initiation failed");
+  }
+};
