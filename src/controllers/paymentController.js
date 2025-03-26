@@ -173,20 +173,14 @@ export const requestOtp = async (req, res) => {
     }
 
     // **Step 1: Initiate Withdrawal**
-    const withdrawalResponse = await initiateWithdrawal(recipientCode, amount, otp);
+    const withdrawalResponse = await initiateWithdrawal(recipientCode, amount, undefined);
 
+    return res.status(202).json({
+      message: "OTP sent. Please verify your Paystack OTP.",
+      reference: withdrawalResponse.reference,
+      transfer_code: withdrawalResponse.transfer_code,
+    });
 
-
-
-    if (withdrawalResponse.status === "otp") {
-      return res.status(202).json({
-        message: "OTP required for withdrawal. Please verify your Paystack OTP.",
-        reference: withdrawalResponse.reference,
-        transfer_code: withdrawalResponse.transfer_code,
-      });
-    }
-
-    return res.status(200).json({ message: "Withdrawal initiated successfully", withdrawalResponse });
   } catch (error) {
     console.error("❌ OTP request processing failed:", error.message);
     res.status(500).json({ message: "OTP request failed", error: error.message });
@@ -243,17 +237,10 @@ export const verifyOtp = async (req, res) => {
       amount: amount * 100, // Paystack expects the amount in kobo
       currency: "NGN",
       reason: "Withdrawal request",
-      otp: req.body.otp, 
+      otp: otp, 
     });
 
-
-    
-
     const withdrawalResponse = await initiateWithdrawal(req.user, recipientCode, amount, otp);
-
-
-
-
 
     // **Step 3: Verify Withdrawal**
     const statusResponse = await verifyWithdrawalStatus(withdrawalResponse.transfer_code);
