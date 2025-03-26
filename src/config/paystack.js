@@ -160,7 +160,7 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
     console.log("📤 Withdrawal request payload:", {
       recipient: recipientCode,
       amount: validAmount * 100, 
-      currency: "NGN",
+      currency: "GHS",
       reason: "Withdrawal request",
       otp: otp || undefined,
     });
@@ -168,7 +168,7 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
     const response = await axios.post(`${PAYSTACK_BASE_URL}/transfer`, {
       recipient: recipientCode,
       amount: validAmount * 100, 
-      currency: "NGN",
+      currency: "GHS",
       reason: "Withdrawal request",
       otp: otp,
     }, {

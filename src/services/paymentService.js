@@ -164,7 +164,7 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
     console.log("📤 Sending withdrawal request to Paystack:", {
       recipient: recipientCode,
       amount: validAmount * 100, // Convert to kobo
-      currency: "NGN",
+      currency: "GHS",
       reason: "Withdrawal request",
       ...(otp && { otp }), // Include OTP if provided
     });
