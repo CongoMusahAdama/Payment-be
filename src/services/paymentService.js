@@ -172,6 +172,12 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
     });
 
     const response = await axios.post("https://api.paystack.co/transfer", {
+      recipient: recipientCode,
+      amount: amount * 100, // Paystack expects the amount in kobo
+      currency: "NGN",
+      reason: "Withdrawal request",
+      otp: otp, // Include OTP if required
+
 
 
       recipient: recipientCode,
