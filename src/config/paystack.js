@@ -6,6 +6,9 @@ dotenv.config();
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 const PAYSTACK_BASE_URL = process.env.PAYSTACK_BASE_URL || "https://api.paystack.co";
 
+// Log the PAYSTACK_BASE_URL for debugging
+console.log("🚀 Using PAYSTACK_BASE_URL:", PAYSTACK_BASE_URL);
+
 // Function to initialize a payment
 export const initializePayment = async (email, amount, callbackUrl) => {
   try {
@@ -52,7 +55,7 @@ export const verifyPayment = async (reference) => {
   }
 };
 
-//Initiate Deposit
+// Initiate Deposit
 export const initiateDeposit = async (user, amount) => {
   if (!user || !user.email) throw new Error("User email is required for payment");
 
@@ -104,8 +107,6 @@ export const verifyWithdrawalStatus = async (transferCode) => {
   }
 };
 
-
-
 export const verifyWithdrawal = async (req, res) => {
   try {
     const { transfer_code, otp } = req.body;
@@ -142,8 +143,6 @@ export const verifyWithdrawal = async (req, res) => {
     res.status(500).json({ message: "Withdrawal verification failed", error: error.message });
   }
 };
-
-
 
 /**
  * Initiate Withdrawal via Paystack
@@ -185,7 +184,6 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
     throw new Error("Withdrawal initiation failed");
   }
 };
-
 
 export const createPaystackRecipient = async (user) => {
   try {
