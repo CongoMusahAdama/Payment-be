@@ -173,7 +173,8 @@ export const requestOtp = async (req, res) => {
     }
 
     // **Step 1: Initiate Withdrawal**
-    const withdrawalResponse = await initiateWithdrawal(recipientCode, amount, otp);
+    const withdrawalResponse = await initiateWithdrawal(recipientCode, amount, req.body.otp);
+
 
 
     if (withdrawalResponse.status === "otp") {
