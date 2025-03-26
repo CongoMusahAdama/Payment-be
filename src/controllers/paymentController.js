@@ -173,7 +173,8 @@ export const requestOtp = async (req, res) => {
     }
 
     // **Step 1: Initiate Withdrawal**
-    const withdrawalResponse = await initiateWithdrawal(recipientCode, amount);
+    const withdrawalResponse = await initiateWithdrawal(recipientCode, amount, otp);
+
 
     if (withdrawalResponse.status === "otp") {
       return res.status(202).json({
@@ -235,7 +236,21 @@ export const verifyOtp = async (req, res) => {
     }
 
     // **Step 2: Initiate Withdrawal**
+    console.log("📤 Withdrawal request payload:", {
+      recipient: recipientCode,
+      amount: amount * 100, // Paystack expects the amount in kobo
+      currency: "NGN",
+      reason: "Withdrawal request",
+      otp: otp, // Include OTP if required
+    });
+
+    
+
     const withdrawalResponse = await initiateWithdrawal(req.user, recipientCode, amount, otp);
+
+
+
+
 
     // **Step 3: Verify Withdrawal**
     const statusResponse = await verifyWithdrawalStatus(withdrawalResponse.transfer_code);
