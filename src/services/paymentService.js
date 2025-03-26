@@ -149,9 +149,7 @@ export const handleWebhookUpdated = async (req, res) => {
   res.status(200).send("Webhook received");
 };
 
-/**
- * Initiate Withdrawal via Paystack
- */
+//initiate withdrawal
 export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
   try {
     const validAmount = Number(amount);
@@ -176,11 +174,12 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
     }, {
       headers: {
         Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+        "Content-Type": "application/json",
       },
     });
 
-    if (!response.data || !response.data.status) {
-      console.error("❌ Paystack API Error:", response.data);
+    if (!response.data || response.data.status !== true) {
+      console.error("❌ Paystack API Response Error:", response.data);
       throw new Error(response.data.message || "Failed to initiate withdrawal");
     }
 
@@ -189,6 +188,8 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
 
   } catch (error) {
     console.error("🚨 Error initiating withdrawal:", error.response?.data || error.message);
-    throw new Error("Withdrawal initiation failed");
+
+    // Return specific error message from Paystack
+    throw new Error(error.response?.data?.message || "Withdrawal initiation failed");
   }
 };
