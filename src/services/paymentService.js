@@ -184,6 +184,7 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
     });
 
 
+
     if (!response.data || response.data.status !== true) {
       throw new Error("Failed to initiate withdrawal");
     }
