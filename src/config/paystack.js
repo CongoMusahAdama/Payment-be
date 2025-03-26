@@ -106,6 +106,45 @@ export const verifyWithdrawalStatus = async (transferCode) => {
 
 
 
+export const verifyWithdrawal = async (req, res) => {
+  try {
+    const { transfer_code, otp } = req.body;
+
+    if (!transfer_code || !otp) {
+      return res.status(400).json({ message: "Transfer code and OTP are required." });
+    }
+
+    const response = await axios.post(
+      "https://api.paystack.co/transfer/finalize_transfer",
+      {
+        transfer_code,
+        otp
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    if (response.data.status === true) {
+      return res.status(200).json({
+        message: "Withdrawal successful!",
+        transfer_code: response.data.data.transfer_code
+      });
+    } else {
+      return res.status(400).json({ message: "OTP verification failed. Please try again." });
+    }
+
+  } catch (error) {
+    console.error("❌ Error verifying withdrawal:", error.response?.data || error.message);
+    res.status(500).json({ message: "Withdrawal verification failed", error: error.message });
+  }
+};
+
+
+
 export const createPaystackRecipient = async (user) => {
     try {
         const response = await axios.post(

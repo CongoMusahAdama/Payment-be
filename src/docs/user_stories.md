@@ -64,7 +64,18 @@
     - I can retrieve my balance by sending a GET request to `/api/payments/balance`.
     - I receive a success message with my current balance.
 
-### 5. Handle Webhook Notifications
+### 5. Request OTP for Withdrawal
+- **As a user**, I want to request an OTP for my withdrawal so that I can securely complete the transaction.
+  - **Acceptance Criteria:**
+    - I can initiate an OTP request by sending a POST request to `/api/payments/withdraw/request-otp` with the amount.
+    - I receive a success message indicating that the OTP is required for withdrawal.
+
+### 6. Verify OTP for Withdrawal
+- **As a user**, I want to verify my OTP for withdrawal so that I can complete the transaction.
+  - **Acceptance Criteria:**
+    - I can verify my OTP by sending a POST request to `/api/payments/withdraw/verify` with the amount and OTP.
+    - I receive a success message confirming the withdrawal along with my updated balance.
+
 - **As a user**, I want to ensure that my payment status is updated automatically when a webhook notification is received from the payment provider.
   - **Acceptance Criteria:**
     - The server processes webhook notifications from the payment provider to update payment statuses accordingly.

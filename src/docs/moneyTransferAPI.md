@@ -56,7 +56,60 @@ http://localhost:5000/api/transactions
 
 ---
 
-### 📌 Test Get Transaction History
+### 📌 Test Request OTP for Withdrawal
+- **Request:** `POST /api/payments/withdraw/request-otp`
+- **Headers:**
+  - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+  "amount": <amount> // Amount to withdraw
+}
+```
+- **Response:**
+  - **Success (202):**
+    ```json
+    {
+      "message": "OTP required for withdrawal. Please verify your Paystack OTP.",
+      "reference": "<reference>",
+      "transfer_code": "<transfer_code>"
+    }
+    ```
+  - **Error (400):**
+    ```json
+    {
+      "message": "<error_message>"
+    }
+    ```
+
+### 📌 Test Verify OTP for Withdrawal
+- **Request:** `POST /api/payments/withdraw/verify`
+- **Headers:**
+  - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+  "amount": <amount>, // Amount to withdraw
+  "otp": "<otp>" // OTP received for verification
+}
+```
+- **Response:**
+  - **Success (200):**
+    ```json
+    {
+      "message": "Withdrawal successful",
+      "balance": <balance>, // User's updated balance
+      "transaction": { /* transaction details */ }
+    }
+    ```
+  - **Error (400):**
+    ```json
+    {
+      "message": "<error_message>"
+    }
+    ```
+
+
 - **Request:** `GET /api/transactions/history`
 - **Request Body**: (No body required)
 - sactionType`: The type of transaction to filter (e.g., "transfer").

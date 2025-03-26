@@ -96,7 +96,62 @@
     }
     ```
 
-## 5. Webhook
+## 5. Request OTP for Withdrawal
+- **Endpoint:** `POST /api/payments/withdraw/request-otp`
+- **Description:** Initiates a request for an OTP to complete a withdrawal.
+- **Headers:**
+  - `Authorization: Bearer <token>` (replace `<token>` with the actual token)
+- **Request Body:**
+```json
+{
+  "amount": <amount> // Amount to withdraw
+}
+```
+- **Response:**
+  - **Success (202):**
+    ```json
+    {
+      "message": "OTP required for withdrawal. Please verify your Paystack OTP.",
+      "reference": "<reference>",
+      "transfer_code": "<transfer_code>"
+    }
+    ```
+  - **Error (400):**
+    ```json
+    {
+      "message": "<error_message>"
+    }
+    ```
+
+## 6. Verify OTP for Withdrawal
+- **Endpoint:** `POST /api/payments/withdraw/verify`
+- **Description:** Verifies the OTP and completes the withdrawal.
+- **Headers:**
+  - `Authorization: Bearer <token>` (replace `<token>` with the actual token)
+- **Request Body:**
+```json
+{
+  "amount": <amount>, // Amount to withdraw
+  "otp": "<otp>" // OTP received for verification
+}
+```
+- **Response:**
+  - **Success (200):**
+    ```json
+    {
+      "message": "Withdrawal successful",
+      "balance": <balance>, // User's updated balance
+      "transaction": { /* transaction details */ }
+    }
+    ```
+  - **Error (400):**
+    ```json
+    {
+      "message": "<error_message>"
+    }
+    ```
+
+
 - **Endpoint:** `POST /api/payments/webhook`
 - **Description:** Handles webhook notifications from Paystack for payment status updates.
 - **Request Body:**

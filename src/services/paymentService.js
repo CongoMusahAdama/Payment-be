@@ -1,4 +1,4 @@
-import { initializePayment, verifyPayment, createPaystackRecipient } from "../config/paystack.js";
+import { initializePayment, verifyPayment,  } from "../config/paystack.js";
 
 import Payment from "../models/payment.js";
 import Wallet from "../models/wallet.js";
@@ -184,91 +184,5 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
   } catch (error) {
     console.error("🚨 Error initiating withdrawal:", error.message);
     throw new Error("Withdrawal initiation failed");
-  }
-};
-
-export const withdrawFunds = async (req, res) => {
-  try {
-    console.log("🔍 Received withdrawal request from:", req.user);
-
-    if (!req.user || !req.user.id) {
-      return res.status(401).json({ message: "Unauthorized: User not found in request" });
-    }
-
-    const { amount, otp } = req.body;
-    if (!amount || amount <= 0) {
-      return res.status(400).json({ message: "Invalid withdrawal request." });
-    }
-
-    // Check if the user exists
-    const user = await User.findById(req.user.id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found in database" });
-    }
-
-    console.log("✅ User verified:", user);
-
-    // **Step 1: Ensure user has a Paystack recipientCode**
-    let recipientCode = user.recipientCode;
-    
-    if (!recipientCode) {
-      console.log("🔍 No recipientCode found, creating a new one...");
-      recipientCode = await createPaystackRecipient(user);
-
-      // Save the new recipientCode in the user profile
-      user.recipientCode = recipientCode;
-      await user.save();
-    }
-
-    console.log("✅ Using recipientCode:", recipientCode);
-
-    // **Step 2: Find User's Wallet**
-    const wallet = await Wallet.findOne({ user: req.user.id });
-    if (!wallet || wallet.balance < amount) {
-      return res.status(400).json({ message: "Insufficient funds or wallet not found" });
-    }
-
-    // **Step 3: Initiate Withdrawal**
-    const withdrawalResponse = await initiateWithdrawal(req.user, recipientCode, amount, otp);
-
-    if (withdrawalResponse.status === "otp") {
-      return res.status(202).json({
-        message: "OTP required for withdrawal. Please verify your Paystack OTP.",
-        reference: withdrawalResponse.reference,
-        transfer_code: withdrawalResponse.transfer_code,
-      });
-    }
-
-    // **Step 4: Verify Withdrawal**
-    const statusResponse = await verifyWithdrawalStatus(withdrawalResponse.transfer_code);
-    if (statusResponse.data.status !== "success") {
-      return res.status(400).json({
-        message: "Withdrawal failed. Please verify your OTP and try again.",
-        status: statusResponse.data.status,
-      });
-    }
-
-    // **Step 5: Update Transaction & Wallet**
-    const transaction = new Transaction({
-      sender: req.user.id,
-      recipient: recipientCode,
-      amount,
-      transactionType: "withdrawal",
-      status: "completed",
-      reference: withdrawalResponse.reference,
-    });
-
-    await transaction.save();
-    wallet.balance -= amount;
-    await wallet.save();
-
-    // **Step 6: Link Transaction to User**
-    await User.findByIdAndUpdate(req.user.id, { $push: { transactions: transaction._id } });
-
-    res.status(200).json({ message: "Withdrawal successful", balance: wallet.balance, transaction });
-
-  } catch (error) {
-    console.error("❌ Withdrawal processing failed:", error.message);
-    res.status(500).json({ message: "Withdrawal failed", error: error.message });
   }
 };

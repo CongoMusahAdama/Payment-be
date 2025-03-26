@@ -1,5 +1,5 @@
 import express from "express";
-import { depositFunds, verifyDeposit, withdrawFunds, handleWebhookController, getUserBalance } from "../controllers/paymentController.js";
+import { depositFunds, verifyDeposit, requestOtp, verifyOtp, handleWebhookController, getUserBalance } from "../controllers/paymentController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -64,11 +64,11 @@ router.get("/verify", verifyDeposit);
 
 /**
  * @swagger
- * /api/payments/withdraw:
+ * /api/payments/withdraw/request-otp:
  *   post:
  *     tags: [Payment Management]
- *     summary: Withdraw funds from the user's account
- *     description: This endpoint allows users to withdraw funds from their account.
+ *     summary: Request OTP for withdrawal
+ *     description: This endpoint allows users to request an OTP for withdrawal.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -83,7 +83,7 @@ router.get("/verify", verifyDeposit);
  *                 description: The amount to withdraw
  *     responses:
  *       200:
- *         description: Funds withdrawn successfully
+ *         description: OTP requested successfully
  *       400:
  *         description: Invalid request
  *       401:
@@ -91,7 +91,42 @@ router.get("/verify", verifyDeposit);
  *       500:
  *         description: Internal server error
  */
-router.post("/withdraw", authMiddleware, withdrawFunds);
+router.post("/withdraw/request-otp", authMiddleware, requestOtp);
+
+/**
+ * @swagger
+ * /api/payments/withdraw/verify:
+ *   post:
+ *     tags: [Payment Management]
+ *     summary: Verify OTP and process withdrawal
+ *     description: This endpoint allows users to verify OTP and complete the withdrawal.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               amount:
+ *                 type: number
+ *                 description: The amount to withdraw
+ *               otp:
+ *                 type: string
+ *                 description: The OTP received for verification
+ *     responses:
+ *       200:
+ *         description: Withdrawal processed successfully
+ *       400:
+ *         description: Invalid request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+router.post("/withdraw/verify", authMiddleware, verifyOtp);
+
 
 /**
  * @swagger
