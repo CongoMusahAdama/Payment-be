@@ -65,6 +65,10 @@ export const requestMoneyService = async (requesterId, recipientId, amount, note
   });
 
   await moneyRequest.save();
+
+  // Update recipient's user model to include the money request
+  await User.findByIdAndUpdate(recipientId, { $push: { moneyRequests: moneyRequest._id } });
+
   return moneyRequest;
 };
 
