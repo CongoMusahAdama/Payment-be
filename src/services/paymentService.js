@@ -176,20 +176,13 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
       amount: amount * 100, // Paystack expects the amount in kobo
       currency: "NGN",
       reason: "Withdrawal request",
-      otp: otp, // Include OTP if required
-
-
-
-      recipient: recipientCode,
-      amount: amount * 100, // Paystack expects the amount in kobo
-      currency: "NGN",
-      reason: "Withdrawal request",
-      otp: otp, // Include OTP if required
+      otp: otp // Include OTP if required
     }, {
       headers: {
         Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
       },
     });
+
 
     if (!response.data || response.data.status !== true) {
       throw new Error("Failed to initiate withdrawal");
