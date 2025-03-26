@@ -6,7 +6,7 @@ import Transaction from "../models/transaction.js";
 export const transferFunds = async (req, res) => {
   try {
     const { recipientId, amount } = req.body;
-    const senderId = req.user._id; // Get user ID from JWT
+    const senderId = req.user._id; 
 
     console.log("Received Request Body:", req.body);
     console.log("Sender ID (from token):", senderId);

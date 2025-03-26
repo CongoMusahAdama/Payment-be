@@ -171,11 +171,15 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
       currency: "NGN",
       reason: "Withdrawal request",
       ...(otp && { otp }),
-    }, {
-      headers: {
-        Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
-        "Content-Type": "application/json",
-      },
+    });
+
+    // Log the withdrawal request payload for debugging
+    console.log("📤 Withdrawal request payload:", {
+      recipient: recipientCode,
+      amount: validAmount * 100, 
+      currency: "NGN",
+      reason: "Withdrawal request",
+      ...(otp && { otp }),
     });
 
     if (!response.data || response.data.status !== true) {
