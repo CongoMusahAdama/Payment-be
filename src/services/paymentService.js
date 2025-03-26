@@ -1,4 +1,4 @@
-import { initializePayment, verifyPayment,  } from "../config/paystack.js";
+import { initializePayment, verifyPayment } from "../config/paystack.js";
 
 import Payment from "../models/payment.js";
 import Wallet from "../models/wallet.js";
@@ -163,14 +163,6 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
       otp: otp, // Include OTP if required
     });
 
-    console.log("📤 Initiating withdrawal with parameters:", {
-      recipient: recipientCode,
-      amount: amount * 100, // Paystack expects the amount in kobo
-      currency: "NGN",
-      reason: "Withdrawal request",
-      otp: otp, // Include OTP if required
-    });
-
     const response = await axios.post("https://api.paystack.co/transfer", {
       recipient: recipientCode,
       amount: amount * 100, // Paystack expects the amount in kobo
@@ -182,8 +174,6 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
         Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
       },
     });
-
-
 
     if (!response.data || response.data.status !== true) {
       throw new Error("Failed to initiate withdrawal");

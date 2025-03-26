@@ -141,6 +141,10 @@ export const requestOtp = async (req, res) => {
 
     const amount = Number(req.body.amount);
     if (isNaN(amount) || amount <= 0) {
+        return res.status(400).json({ message: "Invalid withdrawal amount." });
+    }
+
+    if (isNaN(amount) || amount <= 0) {
       return res.status(400).json({ message: "Invalid withdrawal amount." });
     }
 
@@ -171,6 +175,14 @@ export const requestOtp = async (req, res) => {
 
     // Initiate withdrawal without OTP
     const withdrawalResponse = await initiateWithdrawal(req.user, recipientCode, amount, null);
+    if (withdrawalResponse.status === "otp") {
+        return res.status(202).json({
+            message: "OTP sent. Please verify your Paystack OTP.",
+            reference: withdrawalResponse.reference,
+            transfer_code: withdrawalResponse.transfer_code,
+        });
+    }
+
 
     if (withdrawalResponse.status === "otp") {
       return res.status(202).json({
