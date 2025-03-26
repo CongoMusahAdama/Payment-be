@@ -1,6 +1,5 @@
 import { initializePayment, verifyPayment, PAYSTACK_BASE_URL } from "../config/paystack.js";
 
-
 import Payment from "../models/payment.js";
 import Wallet from "../models/wallet.js";
 import Transaction from "../models/transaction.js";
@@ -150,10 +149,7 @@ export const handleWebhookUpdated = async (req, res) => {
   res.status(200).send("Webhook received");
 };
 
-
-
-
-//initiate withdrawal
+// Initiate withdrawal
 export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
   try {
     const validAmount = Number(amount);
@@ -164,28 +160,28 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
     console.log("📤 Sending withdrawal request to Paystack:", {
       recipient: recipientCode,
       amount: validAmount * 100, // Convert to kobo
-      currency: "GHS",
+      currency: "GHS", // Updated to GHS
       reason: "Withdrawal request",
       ...(otp && { otp }), // Include OTP if provided
     });
 
     const response = await axios.post(`${PAYSTACK_BASE_URL}/transfer`, {
+      recipient: recipientCode,
+      amount: validAmount * 100, 
+      currency: "GHS", // Updated to GHS
+      reason: "Withdrawal request",
+      ...(otp && { otp }),
+    }, {
       headers: {
         Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
       },
-
-      recipient: recipientCode,
-      amount: validAmount * 100, 
-      currency: "NGN",
-      reason: "Withdrawal request",
-      ...(otp && { otp }),
     });
 
     // Log the withdrawal request payload for debugging
     console.log("📤 Withdrawal request payload:", {
       recipient: recipientCode,
       amount: validAmount * 100, 
-      currency: "NGN",
+      currency: "GHS", // Updated to GHS
       reason: "Withdrawal request",
       ...(otp && { otp }),
     });
