@@ -1,4 +1,5 @@
-import { initializePayment, verifyPayment } from "../config/paystack.js";
+import { initializePayment, verifyPayment, PAYSTACK_BASE_URL } from "../config/paystack.js";
+
 
 import Payment from "../models/payment.js";
 import Wallet from "../models/wallet.js";
@@ -148,6 +149,9 @@ export const handleWebhookUpdated = async (req, res) => {
   // Respond to the webhook
   res.status(200).send("Webhook received");
 };
+
+
+
 
 //initiate withdrawal
 export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {

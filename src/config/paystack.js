@@ -4,7 +4,8 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
-const PAYSTACK_BASE_URL = process.env.PAYSTACK_BASE_URL || "https://api.paystack.co";
+export const PAYSTACK_BASE_URL = process.env.PAYSTACK_BASE_URL || "https://api.paystack.co";
+
 
 // Log the PAYSTACK_BASE_URL for debugging
 console.log("🚀 Using PAYSTACK_BASE_URL:", PAYSTACK_BASE_URL);
