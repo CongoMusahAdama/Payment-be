@@ -145,38 +145,6 @@ export const verifyWithdrawal = async (req, res) => {
 
 
 
-export const createPaystackRecipient = async (user) => {
-    try {
-        const response = await axios.post(
-            "https://api.paystack.co/transferrecipient",
-            {
-                type: "mobile_money",
-                name: user.Fullname,
-                account_number: user.phone, 
-                bank_code: "MTN", 
-                currency: "GHS",
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-                    "Content-Type": "application/json",
-                },
-            }
-        );
-
-        if (!response.data || !response.data.data) {
-            throw new Error("Failed to create Paystack recipient");
-        }
-
-        console.log("✅ Paystack recipient created:", response.data.data);
-
-        return response.data.data.recipient_code;
-    } catch (error) {
-        console.error("❌ Error creating Paystack recipient:", error.response?.data || error.message);
-        throw new Error("Recipient creation failed");
-    }
-};
-
 /**
  * Initiate Withdrawal via Paystack
  */
@@ -215,5 +183,38 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
   } catch (error) {
     console.error("🚨 Error initiating withdrawal:", error.message);
     throw new Error("Withdrawal initiation failed");
+  }
+};
+
+
+export const createPaystackRecipient = async (user) => {
+  try {
+      const response = await axios.post(
+          "https://api.paystack.co/transferrecipient",
+          {
+              type: "mobile_money",
+              name: user.Fullname,
+              account_number: user.phone, 
+              bank_code: "MTN", 
+              currency: "GHS",
+          },
+          {
+              headers: {
+                  Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+                  "Content-Type": "application/json",
+              },
+          }
+      );
+
+      if (!response.data || !response.data.data) {
+          throw new Error("Failed to create Paystack recipient");
+      }
+
+      console.log("✅ Paystack recipient created:", response.data.data);
+
+      return response.data.data.recipient_code;
+  } catch (error) {
+      console.error("❌ Error creating Paystack recipient:", error.response?.data || error.message);
+      throw new Error("Recipient creation failed");
   }
 };

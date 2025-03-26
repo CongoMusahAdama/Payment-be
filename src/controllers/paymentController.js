@@ -141,10 +141,6 @@ export const requestOtp = async (req, res) => {
 
     const amount = Number(req.body.amount);
     if (isNaN(amount) || amount <= 0) {
-        return res.status(400).json({ message: "Invalid withdrawal amount." });
-    }
-
-    if (isNaN(amount) || amount <= 0) {
       return res.status(400).json({ message: "Invalid withdrawal amount." });
     }
 
@@ -174,31 +170,26 @@ export const requestOtp = async (req, res) => {
     }
 
     // Initiate withdrawal without OTP
+    console.log("📤 Initiating withdrawal request...");
     const withdrawalResponse = await initiateWithdrawal(req.user, recipientCode, amount, null);
-    if (withdrawalResponse.status === "otp") {
-        return res.status(202).json({
-            message: "OTP sent. Please verify your Paystack OTP.",
-            reference: withdrawalResponse.reference,
-            transfer_code: withdrawalResponse.transfer_code,
-        });
+
+    if (!withdrawalResponse || !withdrawalResponse.transfer_code) {
+      console.error("❌ No transfer_code received from Paystack:", withdrawalResponse);
+      return res.status(500).json({ message: "Failed to initiate withdrawal. Try again later." });
     }
 
-
-    if (withdrawalResponse.status === "otp") {
-      return res.status(202).json({
-        message: "OTP sent. Please verify your Paystack OTP.",
-        reference: withdrawalResponse.reference,
-        transfer_code: withdrawalResponse.transfer_code,
-      });
-    }
-
-    res.status(400).json({ message: "Withdrawal request failed. Please try again." });
+    return res.status(202).json({
+      message: "OTP sent. Please verify your Paystack OTP.",
+      reference: withdrawalResponse.reference,
+      transfer_code: withdrawalResponse.transfer_code,
+    });
 
   } catch (error) {
     console.error("❌ OTP request processing failed:", error.message);
     res.status(500).json({ message: "OTP request failed", error: error.message });
   }
 };
+
 
 /**
  * Verify OTP for withdrawal

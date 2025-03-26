@@ -145,7 +145,6 @@ export const handleWebhookUpdated = async (req, res) => {
       console.log("Payment status updated to completed for reference:", webhookData.data.reference);
     }
   }
-
   // Respond to the webhook
   res.status(200).send("Webhook received");
 };
@@ -155,32 +154,41 @@ export const handleWebhookUpdated = async (req, res) => {
  */
 export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
   try {
-    console.log("📤 Withdrawal request payload:", {
+    const validAmount = Number(amount);
+    if (isNaN(validAmount) || validAmount <= 0) {
+      throw new Error("Invalid withdrawal amount");
+    }
+
+    console.log("📤 Sending withdrawal request to Paystack:", {
       recipient: recipientCode,
-      amount: amount * 100, // Paystack expects the amount in kobo
+      amount: validAmount * 100, // Convert to kobo
       currency: "NGN",
       reason: "Withdrawal request",
-      otp: otp, // Include OTP if required
+      ...(otp && { otp }), // Include OTP if provided
     });
 
-    const response = await axios.post("https://api.paystack.co/transfer", {
+    const response = await axios.post(`${PAYSTACK_BASE_URL}/transfer`, {
       recipient: recipientCode,
-      amount: amount * 100, // Paystack expects the amount in kobo
+      amount: validAmount * 100, 
       currency: "NGN",
-      reason: "Withdrawal request"
+      reason: "Withdrawal request",
+      ...(otp && { otp }),
     }, {
       headers: {
-        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
       },
     });
 
-    if (!response.data || response.data.status !== true) {
-      throw new Error("Failed to initiate withdrawal");
+    if (!response.data || !response.data.status) {
+      console.error("❌ Paystack API Error:", response.data);
+      throw new Error(response.data.message || "Failed to initiate withdrawal");
     }
 
-    return response.data.data; // Returns the withdrawal response data
+    console.log("✅ Withdrawal initiated successfully:", response.data.data);
+    return response.data.data;
+
   } catch (error) {
-    console.error("🚨 Error initiating withdrawal:", error.message);
+    console.error("🚨 Error initiating withdrawal:", error.response?.data || error.message);
     throw new Error("Withdrawal initiation failed");
   }
 };
