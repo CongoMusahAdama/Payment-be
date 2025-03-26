@@ -231,7 +231,9 @@ export const verifyOtp = async (req, res) => {
     const withdrawalResponse = await initiateWithdrawal(req.user, recipientCode, amount, otp);
 
     const statusResponse = await verifyWithdrawalStatus(withdrawalResponse.transfer_code);
-    if (statusResponse.data.status !== "success") {
+    console.log("📌 Status Response:", statusResponse); // Log the status response for debugging
+    if (!statusResponse || statusResponse.data.status !== "success") {
+
       return res.status(400).json({
         message: "Withdrawal failed. Please verify your OTP and try again.",
         status: statusResponse.data.status,
