@@ -173,7 +173,8 @@ export const requestOtp = async (req, res) => {
     }
 
     // **Step 1: Initiate Withdrawal**
-    const withdrawalResponse = await initiateWithdrawal(recipientCode, amount, req.body.otp);
+    const withdrawalResponse = await initiateWithdrawal(recipientCode, amount, otp);
+
 
 
 
@@ -242,8 +243,9 @@ export const verifyOtp = async (req, res) => {
       amount: amount * 100, // Paystack expects the amount in kobo
       currency: "NGN",
       reason: "Withdrawal request",
-      otp: otp, // Include OTP if required
+      otp: req.body.otp, 
     });
+
 
     
 
