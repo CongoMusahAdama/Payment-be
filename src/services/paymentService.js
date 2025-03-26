@@ -18,6 +18,9 @@ export const verifyWithdrawalStatus = async (transferCode) => {
       },
     });
 
+    // Log the full response for debugging
+    console.log("📌 Withdrawal Status Response:", response.data);
+
     if (!response.data || response.data.status !== true) {
       throw new Error("Failed to verify withdrawal status");
     }
@@ -160,7 +163,7 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
     console.log("📤 Sending withdrawal request to Paystack:", {
       recipient: recipientCode,
       amount: validAmount * 100, // Convert to kobo
-      currency: "GHS", // Updated to GHS
+      currency: "GHS", 
       reason: "Withdrawal request",
       ...(otp && { otp }), // Include OTP if provided
     });
@@ -168,7 +171,7 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
     const response = await axios.post(`${PAYSTACK_BASE_URL}/transfer`, {
       recipient: recipientCode,
       amount: validAmount * 100, 
-      currency: "GHS", // Updated to GHS
+      currency: "GHS", 
       reason: "Withdrawal request",
       ...(otp && { otp }),
     }, {
@@ -181,7 +184,7 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
     console.log("📤 Withdrawal request payload:", {
       recipient: recipientCode,
       amount: validAmount * 100, 
-      currency: "GHS", // Updated to GHS
+      currency: "GHS", 
       reason: "Withdrawal request",
       ...(otp && { otp }),
     });
