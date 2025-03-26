@@ -170,6 +170,10 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
     });
 
     const response = await axios.post(`${PAYSTACK_BASE_URL}/transfer`, {
+      headers: {
+        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+      },
+
       recipient: recipientCode,
       amount: validAmount * 100, 
       currency: "NGN",
