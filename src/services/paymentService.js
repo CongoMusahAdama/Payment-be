@@ -207,6 +207,9 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
       throw new Error(response.data.message || "Failed to initiate withdrawal");
     }
 
+    // Store transfer_code in the transaction
+    transaction.transfer_code = response.data.data.transfer_code; // Ensure transfer_code is stored
+    await transaction.save(); // Save the transaction with transfer_code
     console.log("✅ Withdrawal initiated successfully:", response.data.data);
     return response.data.data;
 
