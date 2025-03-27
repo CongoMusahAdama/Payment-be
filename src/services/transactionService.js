@@ -47,7 +47,23 @@ export const transferFundsService = async (senderId, recipientId, amount) => {
   return transaction;
 };
 
+/**
+ * Get User Transactions
+ */
+export const getUserTransactions = async (userId) => {
+  try {
+    const transactions = await Transaction.find({
+      $or: [{ sender: userId }, { recipient: userId }],
+    }).sort({ createdAt: -1 }); // Sort by latest transactions
+
+    return transactions;
+  } catch (error) {
+    throw new Error("Failed to fetch user transactions: " + error.message);
+  }
+};
+
 // ✅ Money Request Functionality
+
 export const requestMoneyService = async (requesterId, recipientId, amount, note) => {
   if (amount <= 0) throw new Error("Requested amount must be greater than zero");
 
@@ -85,46 +101,54 @@ export const fetchAllMoneyRequests = async () => {
 };
 
 /**
- * Approve Money Request
- */
-export const approveMoneyRequest = async (transactionId) => {
-  try {
-    const moneyRequest = await MoneyRequest.findById(transactionId);
-    if (!moneyRequest) throw new Error("Money request not found");
+ Approve Money Request
+**/
+export const approveMoneyRequest = async (requestId) => {
+ try {
+   const moneyRequest = await MoneyRequest.findById(requestId);
+   if (!moneyRequest) throw new Error("Money request not found");
 
-    // Check if the requester has enough balance
-    const user = await User.findById(moneyRequest.requesterId);
-    const wallet = await Wallet.findOne({ user: user.id });
+   // Ensure the money request is still pending
+   if (moneyRequest.status !== "pending") {
+     throw new Error("Money request is already processed");
+   }
 
-    if (!wallet || wallet.balance < moneyRequest.amount) {
-      throw new Error("Insufficient funds for this transaction");
-    }
+   // Find sender and check balance
+   const senderWallet = await Wallet.findOne({ user: moneyRequest.sender });
+   if (!senderWallet || senderWallet.balance < moneyRequest.amount) {
+     throw new Error("Insufficient funds for this transaction");
+   }
 
-    // Update the money request status to approved
-    moneyRequest.status = "approved";
-    await moneyRequest.save();
+   // Deduct from sender's wallet
+   senderWallet.balance -= moneyRequest.amount;
+   await senderWallet.save();
 
-    return moneyRequest;
-  } catch (error) {
-    throw new Error("Failed to approve money request: " + error.message);
-  }
-};
+   // Credit recipient's wallet
+   const recipientWallet = await Wallet.findOne({ user: moneyRequest.requester });
+   if (!recipientWallet) {
+     throw new Error("Recipient wallet not found");
+   }
+   recipientWallet.balance += moneyRequest.amount;
+   await recipientWallet.save();
 
-// ✅ Get User Transaction History with Filters
-export const getUserTransactions = async (userId, filters) => {
-  const query = { $or: [{ sender: userId }, { recipient: userId }] };
+   // Create transaction record
+   const transaction = new Transaction({
+     sender: moneyRequest.sender,
+     recipient: moneyRequest.requester,
+     amount: moneyRequest.amount,
+     transactionType: "transfer",
+     status: "completed",
+     reference: `REQ-${requestId}`,
+   });
+   await transaction.save();
 
-  // Apply filters
-  if (filters && Object.keys(filters).length > 0) {
-    if (filters.startDate && filters.endDate) {
-      query.createdAt = { $gte: new Date(filters.startDate), $lte: new Date(filters.endDate) };
-    }
+   // Update money request status
+   moneyRequest.status = "approved";
+   moneyRequest.transactionId = transaction._id; // Link transaction
+   await moneyRequest.save();
 
-    if (filters.transactionType) {
-      query.transactionType = filters.transactionType;
-    }
-  }
-
-  const transactions = await Transaction.find(query).sort({ createdAt: -1 }); // Latest first
-  return transactions;
+   return moneyRequest;
+ } catch (error) {
+   throw new Error("Failed to approve money request: " + error.message);
+ }
 };

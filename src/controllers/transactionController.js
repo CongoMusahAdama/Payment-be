@@ -90,28 +90,53 @@ export const fetchAllMoneyRequests = async (req, res) => {
  */
 export const approveMoneyRequest = async (req, res) => {
   try {
-    const { transactionId } = req.params; // Assuming transaction ID is passed as a URL parameter
-    const transaction = await Transaction.findById(transactionId);
+    const { requestId } = req.params; // ✅ Get Money Request ID
+    const senderId = req.user.id; // ✅ Sender (approving the request)
 
-    if (!transaction) {
-      return res.status(404).json({ message: "Transaction not found" });
+    // 1️⃣ Fetch the money request
+    const moneyRequest = await MoneyRequest.findById(requestId);
+    if (!moneyRequest || moneyRequest.status !== "pending") {
+      return res.status(400).json({ message: "Invalid or already processed request" });
     }
 
-    // Check if the requester has enough balance
-    const user = await User.findById(transaction.sender);
-    const wallet = await Wallet.findOne({ user: user.id });
-
-    if (!wallet || wallet.balance < transaction.amount) {
-      return res.status(400).json({ message: "Insufficient funds for this transaction" });
+    // 2️⃣ Ensure the sender has enough balance
+    const senderWallet = await Wallet.findOne({ user: senderId });
+    if (!senderWallet || senderWallet.balance < moneyRequest.amount) {
+      return res.status(400).json({ message: "Insufficient funds" });
     }
 
-    // Update the transaction status to approved
-    transaction.status = "approved";
+    // 3️⃣ Deduct money from sender's wallet
+    senderWallet.balance -= moneyRequest.amount;
+    await senderWallet.save();
+
+    // 4️⃣ Credit recipient's wallet
+    const recipientWallet = await Wallet.findOne({ user: moneyRequest.requester });
+    if (!recipientWallet) {
+      return res.status(400).json({ message: "Recipient wallet not found" });
+    }
+    recipientWallet.balance += moneyRequest.amount;
+    await recipientWallet.save();
+
+    // 5️⃣ Create a transaction after approval
+    const transaction = new Transaction({
+      sender: senderId,
+      recipient: moneyRequest.requester,
+      amount: moneyRequest.amount,
+      transactionType: "transfer",
+      status: "completed",
+      reference: `REQ-${requestId}`, // Use requestId as reference
+    });
     await transaction.save();
 
-    return res.status(200).json({ message: "Transaction approved successfully", transaction });
+    // 6️⃣ Mark the money request as approved
+    moneyRequest.status = "approved";
+    moneyRequest.transactionId = transaction._id; // Link transaction
+    await moneyRequest.save();
+
+    return res.status(200).json({ message: "Money request approved successfully", transaction });
+
   } catch (error) {
-    console.error("Error approving money request:", error);
-    return res.status(500).json({ message: "Failed to approve money request" });
+    console.error("❌ Error approving money request:", error);
+    return res.status(500).json({ message: "Failed to approve money request", error: error.message });
   }
 };

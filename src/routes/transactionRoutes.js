@@ -132,30 +132,55 @@ router.get("/requests", authMiddleware, fetchAllMoneyRequests);
 
 /**
  * @swagger
- * /api/transactions/approve/{transactionId}:
- *   post:
- *     tags: [Money Transfer Management]
+ * /api/transactions/approve/{requestId}:
+ *   put:
  *     summary: Approve a money request
+ *     description: Approves a pending money request after validating the requester's wallet balance.
+ *     tags:
+ *       - Money Requests
  *     security:
- *       - bearerAuth: []
- *     description: Approves a pending money request by updating its status to approved.
+ *       - BearerAuth: []  
  *     parameters:
  *       - in: path
- *         name: transactionId
+ *         name: requestId
  *         required: true
- *         description: ID of the transaction to approve.
  *         schema:
  *           type: string
+ *         description: The ID of the money request to approve
  *     responses:
  *       200:
- *         description: Transaction approved successfully.
- *       404:
- *         description: Transaction not found.
+ *         description: Money request approved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 moneyRequest:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                     sender:
+ *                       type: string
+ *                     requester:
+ *                       type: string
+ *                     amount:
+ *                       type: number
+ *                     status:
+ *                       type: string
+ *                       enum: [pending, approved, declined]
  *       400:
- *         description: Insufficient funds for this transaction.
+ *         description: Insufficient funds or invalid request
+ *       401:
+ *         description: Unauthorized (invalid token)
+ *       404:
+ *         description: Money request not found
  *       500:
- *         description: Failed to approve money request.
+ *         description: Internal server error
  */
-router.post("/approve/:transactionId", authMiddleware, approveMoneyRequest);
+router.put("/approve/:requestId", authMiddleware, approveMoneyRequest);
 
 export default router;
+
