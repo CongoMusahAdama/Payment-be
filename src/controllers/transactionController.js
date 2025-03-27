@@ -1,6 +1,8 @@
 import { transferFundsService, requestMoneyService, getUserTransactions } from "../services/transactionService.js";
 import mongoose from "mongoose";
 import Transaction from "../models/transaction.js";
+import MoneyRequest from "../models/MoneyRequest.js"; // Import MoneyRequest model
+
 import User from "../models/user.js"; 
 import Wallet from "../models/wallet.js"; 
 

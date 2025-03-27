@@ -130,9 +130,6 @@ export const getUserBalance = async (req, res) => {
   }
 };
 
-/**
- * Request OTP for withdrawal
- */
 export const requestOtp = async (req, res) => {
   try {
     console.log("🔍 Received OTP request from:", req.user);
@@ -174,17 +171,17 @@ export const requestOtp = async (req, res) => {
     // Initiate withdrawal without OTP
     console.log("📤 Initiating withdrawal request...");
     const withdrawalResponse = await initiateWithdrawal(req.user, recipientCode, amount, null);
-    
-    // Create a transaction record for the withdrawal
+
+    // ✅ FIX: Include recipientCode in the transaction
     const transaction = new Transaction({
         sender: req.user.id,
+        recipient: recipientCode, // ✅ Add this line
         amount,
         transactionType: "withdrawal",
         status: "otp",
         reference: withdrawalResponse.reference
     });
     await transaction.save();
-
 
     if (!withdrawalResponse || !withdrawalResponse.transfer_code) {
       console.error("❌ No transfer_code received from Paystack:", withdrawalResponse);
@@ -202,9 +199,6 @@ export const requestOtp = async (req, res) => {
     res.status(500).json({ message: "OTP request failed", error: error.message });
   }
 };
-
-
-
 
 /**
  * Verify OTP for withdrawal
