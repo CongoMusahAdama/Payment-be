@@ -3,27 +3,28 @@
 The Money Transfer App is a secure platform that enables users to send and receive funds seamlessly. Designed for both individual and business users, this application ensures robust data protection and a user-friendly experience across multiple devices.
 
 # Features
-Secure user authentication using JWT.
-Multi-factor authentication for enhanced security.
-Integration with Paystack for payment processing.
-File upload capabilities for KYC documentation.
-Comprehensive API documentation using Swagger.
-Profile management
-Money transfer operations
-Payment withdrawal operations
-Transaction history and reporting
-Tech Stack
-Node.js: JavaScript runtime for building server-side applications.
-Express.js: Web framework for Node.js to build APIs.
-MongoDB: NoSQL database for storing user and transaction data.
-Mongoose: ODM for MongoDB to manage data relationships.
-Brevo: For sending emails.
-JWT: For secure user authentication.
-Swagger: For API documentation.
-Multer: For handling file uploads.
-Path: For file path specifications.
-Paystack: For payment integration.
-pdfkit and json2csv: For generating downloadable reports.
+- Secure user authentication using JWT.
+- Multi-factor authentication for enhanced security.
+- Integration with Paystack for payment processing.
+- File upload capabilities for KYC documentation.
+- Comprehensive API documentation using Swagger.
+- Profile management
+- Money transfer operations
+- Payment withdrawal operations
+- Transaction history and reporting
+
+# Tech Stack
+- Node.js: JavaScript runtime for building server-side applications.
+- Express.js: Web framework for Node.js to build APIs.
+- MongoDB: NoSQL database for storing user and transaction data.
+- Mongoose: ODM for MongoDB to manage data relationships.
+- Brevo: For sending emails.
+- JWT: For secure user authentication.
+- Swagger: For API documentation.
+- Multer: For handling file uploads.
+- Path: For file path specifications.
+- Paystack: For payment integration.
+- pdfkit and json2csv: For generating downloadable reports.
 
 # Setup Instructions
 Clone the repository:
@@ -41,7 +42,7 @@ JWT_SECRET=<your-jwt-secret>
 PAYSTACK_SECRET_KEY=<your-paystack-secret-key>
 REDIS_URL=<your-redis-url>
 
-Start the server:
+# Start the server:
 - npm run dev
 
  # Usage
@@ -158,27 +159,30 @@ The project is organized into several directories, each serving a specific purpo
 # Architecture Documentation
 The Money Transfer App is designed to provide a secure platform for users to send and receive funds. The backend is built using Node.js and Express.js, with MongoDB as the database. This document outlines the key designs and trade-offs made during the development of the backend.
 
-Key Designs
+# Key Designs
 1. Tech Stack
 Node.js: Utilized for building server-side applications, allowing for asynchronous processing.
 Express.js: A web framework that simplifies API development and routing.
 MongoDB: A NoSQL database chosen for its flexibility in handling user and transaction data.
 Mongoose: An ODM used to manage data relationships and schema validation.
-2. Project Structure
-The project is organized into several directories:
 
+2. Project Structure
+_ The project is organized into several directories:
 controllers/: Contains logic for handling requests and responses.
 models/: Defines data models for MongoDB.
 routes/: Specifies API endpoints and their corresponding controllers.
 services/: Contains business logic and database interactions.
 middleware/: Includes middleware functions for request processing.
 utils/: Contains utility functions and helpers.
+
 3. Security Features
 JWT Authentication: Secure user authentication is implemented using JSON Web Tokens.
 Multi-Factor Authentication: Enhances security by requiring additional verification steps.
+
 4. API Documentation
 Swagger Integration: API endpoints are documented using Swagger, providing clear usage instructions for developers.
-Trade-offs
+
+# Trade-offs
 1. NoSQL Database
 Using MongoDB allows for flexible data models, but it may introduce challenges in ensuring data consistency and relationships.
 
@@ -191,11 +195,11 @@ The application supports file uploads for KYC documentation, which adds function
 4. Data Validation
 While the current implementation handles basic error checking, more extensive validation could enhance robustness and prevent issues with invalid data.
 
-Conclusion
+# Conclusion
 The architecture of the Money Transfer App backend is designed to provide a secure, flexible, and user-friendly experience. The choices made in technology, structure, and security reflect a balance between functionality and maintainability.
 
-License
+# License
 This project is licensed under the MIT License.
 
-Contact
+# Contact
 For any inquiries, please contact Congo Musah Adama at amusahcongo@gmail.com
