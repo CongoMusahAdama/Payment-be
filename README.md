@@ -136,7 +136,7 @@ I receive a success message with my current balance.
 5. Handle Webhook Notifications
 As a user, I want to ensure that my payment status is updated automatically when a webhook notification is received from the payment provider.
 
--Acceptance Criteria:
+- Acceptance Criteria:
 The server processes webhook notifications from the payment provider to update payment statuses accordingly.
 
 # Transactions
@@ -157,7 +157,7 @@ I receive a success message indicating that the money request has been sent.
 3. Get Transaction History
 As a user, I want to view my transaction history so that I can keep track of my financial activities.
 
--Acceptance Criteria:
+- Acceptance Criteria:
 I can retrieve my transaction history by sending a GET request to /api/transactions/history.
 I receive a success message with a list of my transactions.
 Reports
