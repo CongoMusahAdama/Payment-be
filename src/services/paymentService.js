@@ -168,6 +168,18 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
       ...(otp && { otp }), // Include OTP if provided
     });
 
+    // Create a transaction record for the withdrawal
+    const transaction = new Transaction({
+      sender: user._id,
+      recipient: recipientCode,
+      amount: validAmount,
+      transactionType: "withdrawal",
+      status: "otp", // Set status to otp for verification
+      reference: `TXN-${Date.now()}`,
+    });
+
+    await transaction.save(); // Save the transaction before proceeding
+
     const response = await axios.post(`${PAYSTACK_BASE_URL}/transfer`, {
       recipient: recipientCode,
       amount: validAmount * 100, 

@@ -1,5 +1,5 @@
 import express from "express";
-import { transferFunds, requestMoney, getTransactionHistory } from "../controllers/transactionController.js";
+import { transferFunds, requestMoney, getTransactionHistory, fetchAllMoneyRequests, approveMoneyRequest } from "../controllers/transactionController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -110,8 +110,52 @@ router.post("/request-money", authMiddleware, requestMoney);
  *                         description: Status of the transaction.
  *       400:
  *         description: Invalid request.
-
  */
 router.get("/history", authMiddleware, getTransactionHistory);
+
+/**
+ * @swagger
+ * /api/transactions/requests:
+ *   get:
+ *     tags: [Money Transfer Management]
+ *     summary: Retrieve all money requests
+ *     security:
+ *       - bearerAuth: []
+ *     description: Retrieves all pending and completed money requests.
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved money requests.
+ *       500:
+ *         description: Failed to fetch money requests.
+ */
+router.get("/requests", authMiddleware, fetchAllMoneyRequests);
+
+/**
+ * @swagger
+ * /api/transactions/approve/{transactionId}:
+ *   post:
+ *     tags: [Money Transfer Management]
+ *     summary: Approve a money request
+ *     security:
+ *       - bearerAuth: []
+ *     description: Approves a pending money request by updating its status to approved.
+ *     parameters:
+ *       - in: path
+ *         name: transactionId
+ *         required: true
+ *         description: ID of the transaction to approve.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Transaction approved successfully.
+ *       404:
+ *         description: Transaction not found.
+ *       400:
+ *         description: Insufficient funds for this transaction.
+ *       500:
+ *         description: Failed to approve money request.
+ */
+router.post("/approve/:transactionId", authMiddleware, approveMoneyRequest);
 
 export default router;

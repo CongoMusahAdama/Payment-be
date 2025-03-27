@@ -1,6 +1,8 @@
 import { transferFundsService, requestMoneyService, getUserTransactions } from "../services/transactionService.js";
-import mongoose from "mongoose"; // Import mongoose for ObjectId validation
+import mongoose from "mongoose";
 import Transaction from "../models/transaction.js";
+import User from "../models/user.js"; 
+import Wallet from "../models/wallet.js"; 
 
 // ✅ Handle Money Transfers
 export const transferFunds = async (req, res) => {
@@ -54,3 +56,49 @@ export const getTransactionHistory = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+/**
+ * Fetch All Money Requests
+ */
+export const fetchAllMoneyRequests = async (req, res) => {
+  try {
+    const transactions = await Transaction.find({ transactionType: "withdrawal" });
+    return res.status(200).json(transactions);
+  } catch (error) {
+    console.error("Error fetching money requests:", error);
+    return res.status(500).json({ message: "Failed to fetch money requests" });
+  }
+};
+
+/**
+ * Approve Money Request
+ */
+export const approveMoneyRequest = async (req, res) => {
+  try {
+    const { transactionId } = req.params; // Assuming transaction ID is passed as a URL parameter
+    const transaction = await Transaction.findById(transactionId);
+
+    if (!transaction) {
+      return res.status(404).json({ message: "Transaction not found" });
+    }
+
+    // Check if the requester has enough balance
+    const user = await User.findById(transaction.sender);
+    const wallet = await Wallet.findOne({ user: user.id });
+
+    if (!wallet || wallet.balance < transaction.amount) {
+      return res.status(400).json({ message: "Insufficient funds for this transaction" });
+    }
+
+    // Update the transaction status to approved
+    transaction.status = "approved";
+    await transaction.save();
+
+    return res.status(200).json({ message: "Transaction approved successfully", transaction });
+  } catch (error) {
+    console.error("Error approving money request:", error);
+    return res.status(500).json({ message: "Failed to approve money request" });
+  }
+};
+
+// Existing functions...

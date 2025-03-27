@@ -2,7 +2,7 @@ import User from "../models/user.js";
 import Transaction from "../models/transaction.js";
 import MoneyRequest from "../models/MoneyRequest.js"; // Import MoneyRequest model
 import Wallet from "../models/wallet.js";
-import mongoose from "mongoose";
+import mongoose from "mongoose"; // Import mongoose for ObjectId validation
 
 // ✅ Secure Fund Transfer
 export const transferFundsService = async (senderId, recipientId, amount) => {
@@ -70,6 +70,44 @@ export const requestMoneyService = async (requesterId, recipientId, amount, note
   await User.findByIdAndUpdate(recipientId, { $push: { moneyRequests: moneyRequest._id } });
 
   return moneyRequest;
+};
+
+/**
+ * Fetch All Money Requests
+ */
+export const fetchAllMoneyRequests = async () => {
+  try {
+    const moneyRequests = await MoneyRequest.find();
+    return moneyRequests;
+  } catch (error) {
+    throw new Error("Failed to fetch money requests");
+  }
+};
+
+/**
+ * Approve Money Request
+ */
+export const approveMoneyRequest = async (transactionId) => {
+  try {
+    const moneyRequest = await MoneyRequest.findById(transactionId);
+    if (!moneyRequest) throw new Error("Money request not found");
+
+    // Check if the requester has enough balance
+    const user = await User.findById(moneyRequest.requesterId);
+    const wallet = await Wallet.findOne({ user: user.id });
+
+    if (!wallet || wallet.balance < moneyRequest.amount) {
+      throw new Error("Insufficient funds for this transaction");
+    }
+
+    // Update the money request status to approved
+    moneyRequest.status = "approved";
+    await moneyRequest.save();
+
+    return moneyRequest;
+  } catch (error) {
+    throw new Error("Failed to approve money request: " + error.message);
+  }
 };
 
 // ✅ Get User Transaction History with Filters

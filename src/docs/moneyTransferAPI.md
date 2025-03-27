@@ -82,7 +82,79 @@ http://localhost:5000/api/transactions
     }
     ```
 
-### 📌 Test Verify OTP for Withdrawal
+### 📌 Test Fetch All Money Requests
+- **Request:** `GET /api/transactions/requests`
+- **Headers:**
+  - `Authorization: Bearer <token>`
+  
+#### ✅ Expected Response (Success):
+```json
+[
+  {
+    "_id": "67e1619b2aee3ffd087068eb",
+    "requesterId": "67e12796bffb978308c49c49",
+    "recipientId": "67e159bc69a0eb546ff89e8b",
+    "amount": 100,
+    "status": "pending",
+    "note": "Can you send me $100?",
+    "createdAt": "2025-03-24T13:43:55.545Z",
+    "updatedAt": "2025-03-24T13:43:55.545Z"
+  }
+]
+```
+
+#### 🔴 If there are no money requests, it should return:
+```json
+{
+  "message": "No money requests found."
+}
+```
+
+---
+
+### 📌 Test Approve Money Request
+- **Request:** `POST /api/transactions/approve/{transactionId}`
+- **Headers:**
+  - `Authorization: Bearer <token>`
+  
+#### Body (JSON):
+```json
+{
+  "transactionId": "67e1619b2aee3ffd087068eb"
+}
+```
+
+#### ✅ Expected Response (Success):
+```json
+{
+  "message": "Transaction approved successfully",
+  "transaction": {
+    "_id": "67e1619b2aee3ffd087068eb",
+    "requesterId": "67e12796bffb978308c49c49",
+    "recipientId": "67e159bc69a0eb546ff89e8b",
+    "amount": 100,
+    "status": "approved",
+    "note": "Can you send me $100?",
+    "createdAt": "2025-03-24T13:43:55.545Z",
+    "updatedAt": "2025-03-24T13:43:55.545Z"
+  }
+}
+```
+
+#### 🔴 If the transaction is not found, it should return:
+```json
+{
+  "message": "Money request not found"
+}
+```
+
+#### 🔴 If there are insufficient funds, it should return:
+```json
+{
+  "message": "Insufficient funds for this transaction"
+}
+```
+
 - **Request:** `POST /api/payments/withdraw/verify`
 - **Headers:**
   - `Authorization: Bearer <token>`

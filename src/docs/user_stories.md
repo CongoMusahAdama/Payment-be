@@ -100,10 +100,14 @@
     - I can retrieve my transaction history by sending a GET request to `/api/transactions/history`.
     - I receive a success message with a list of my transactions.
 
-## Reports
-
-### 1. Download Transaction Report
-- **As a user**, I want to download my transaction history as a report so that I can keep a record of my financial activities.
+### 4. Fetch All Money Requests
+- **As a user**, I want to view all my money requests so that I can keep track of pending and completed requests.
   - **Acceptance Criteria:**
-    - I can request a transaction report by sending a GET request to `/api/reports/download` with optional query parameters for filters and format (PDF or CSV).
-    - I receive the report in the requested format if transactions are found.
+    - I can retrieve all money requests by sending a GET request to `/api/transactions/requests`.
+    - I receive a success message with a list of my money requests.
+
+### 5. Approve Money Request
+- **As a user**, I want to approve a money request so that I can confirm the transaction.
+  - **Acceptance Criteria:**
+    - I can approve a money request by sending a POST request to `/api/transactions/approve/{transactionId}` with the transaction ID.
+    - I receive a success message confirming the approval of the money request.
