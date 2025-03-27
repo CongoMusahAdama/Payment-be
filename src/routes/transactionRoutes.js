@@ -134,10 +134,9 @@ router.get("/requests", authMiddleware, fetchAllMoneyRequests);
  * @swagger
  * /api/transactions/approve/{requestId}:
  *   put:
+ *     tags: [Money Transfer Management]
  *     summary: Approve a money request
  *     description: Approves a pending money request after validating the requester's wallet balance.
- *     tags:
- *       - Money Requests
  *     security:
  *       - BearerAuth: []  
  *     parameters:
