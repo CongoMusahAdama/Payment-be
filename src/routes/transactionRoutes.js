@@ -138,7 +138,7 @@ router.get("/requests", authMiddleware, fetchAllMoneyRequests);
  *     summary: Approve a money request
  *     description: Approves a pending money request after validating the requester's wallet balance.
  *     security:
- *       - BearerAuth: []  
+ *       - bearerAuth: []  
  *     parameters:
  *       - in: path
  *         name: requestId
