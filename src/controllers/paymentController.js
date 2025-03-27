@@ -248,7 +248,9 @@ export const verifyOtp = async (req, res) => {
     }).sort({ createdAt: -1 });
 
     // Log the fetched transaction for debugging
-    console.log("📌 Fetched Latest Transaction:", latestTransaction);
+    console.log("📌 Fetched Latest Transaction:", latestTransaction); // Log fetched transaction for debugging
+    console.log("🔍 Comparing amount:", Number(amount), "with transaction amount:", latestTransaction.amount); // Log amounts being compared
+
 
     console.log("📌 Fetched Latest Transaction:", latestTransaction); // Log fetched transaction for debugging
     if (!latestTransaction || latestTransaction.amount !== Number(amount) || !latestTransaction.transfer_code) {
