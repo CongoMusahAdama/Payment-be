@@ -47,6 +47,11 @@ http://localhost:5000/api/transactions
   "amount": 100,
   "note": "Can you send me $100?"
 }
+#### Expected Response:
+```json
+{"message":"Money request sent","request":{"requesterId":"67e12796bffb978308c49c49","recipientId":"67e159bc69a0eb546ff89e8b","amount":100,"status":"pending","note":"Can you send me $100?","_id":"67e1619b2aee3ffd087068eb","createdAt":"2025-03-24T13:43:55.545Z","updatedAt":"2025-03-24T13:43:55.545Z","__v":0}}
+```
+
 ```
 
 #### ✅ Expected Response:

@@ -179,6 +179,7 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
     });
 
     await transaction.save(); // Save the transaction before proceeding
+    console.log("✅ Transaction created successfully:", transaction); // Log transaction details
 
     const response = await axios.post(`${PAYSTACK_BASE_URL}/transfer`, {
       recipient: recipientCode,

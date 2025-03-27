@@ -109,5 +109,5 @@
 ### 5. Approve Money Request
 - **As a user**, I want to approve a money request so that I can confirm the transaction.
   - **Acceptance Criteria:**
-    - I can approve a money request by sending a POST request to `/api/transactions/approve/{transactionId}` with the transaction ID.
+    - I can approve a money request by sending a POST request to `/api/transactions/approve/{requestId}` with the transaction ID.
     - I receive a success message confirming the approval of the money request.

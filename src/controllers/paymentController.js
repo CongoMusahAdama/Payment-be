@@ -237,7 +237,9 @@ export const verifyOtp = async (req, res) => {
     }
 
     // 🔥 **Retrieve the latest transfer_code for this user**
+    console.log("🔍 Retrieving latest transaction for user:", req.user.id); // Log user ID for debugging
     const latestTransaction = await Transaction.findOne({
+
       sender: req.user.id,
       amount,
       transactionType: "withdrawal",
@@ -246,7 +248,9 @@ export const verifyOtp = async (req, res) => {
 
     if (!latestTransaction || !latestTransaction.transfer_code) {
 
+      console.error("🚨 No pending withdrawal found for this amount."); // Log error for debugging
       return res.status(400).json({ message: "No pending withdrawal found for this amount." });
+
     }
 
     const transfer_code = latestTransaction.transfer_code; // Get stored transfer_code
