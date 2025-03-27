@@ -8,8 +8,7 @@ const transactionSchema = new mongoose.Schema({
         required: true,
     },
     recipient: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        type: mongoose.Schema.Types.Mixed, // ✅ Allows both ObjectId and String
         required: true,
     },
     transactionType: { 
@@ -23,9 +22,10 @@ const transactionSchema = new mongoose.Schema({
     },
     status: {
         type: String, 
-        enum: ["pending", "completed", "failed"], 
+        enum: ["pending", "completed", "failed", "otp"], 
         default: "pending" 
     },
+
     reference: {
         type: String,
         unique: true,

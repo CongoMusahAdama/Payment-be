@@ -62,13 +62,25 @@ export const getTransactionHistory = async (req, res) => {
  */
 export const fetchAllMoneyRequests = async (req, res) => {
   try {
-    const transactions = await Transaction.find({ transactionType: "withdrawal" });
-    return res.status(200).json(transactions);
+    const userId = req.user._id; // Authenticated user ID
+
+    // Fetch money requests where the user is the recipient
+    const transactions = await Transaction.find({ 
+      transactionType: "request",  
+      recipient: userId  
+    }).populate("sender", "name email"); // Populate sender details
+
+    if (!transactions.length) {
+      return res.status(404).json({ message: "No money requests found" });
+    }
+
+    return res.status(200).json({ message: "Money requests retrieved", transactions });
   } catch (error) {
-    console.error("Error fetching money requests:", error);
+    console.error("🚨 Error fetching money requests:", error);
     return res.status(500).json({ message: "Failed to fetch money requests" });
   }
 };
+
 
 /**
  * Approve Money Request
