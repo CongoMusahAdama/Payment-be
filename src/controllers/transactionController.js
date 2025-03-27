@@ -65,13 +65,14 @@ export const fetchAllMoneyRequests = async (req, res) => {
     const userId = req.user._id; // Authenticated user ID
 
     // Fetch money requests where the user is the recipient
-    const transactions = await Transaction.find({ 
-      transactionType: "request",  
-      recipient: userId  
-    }).populate("sender", "name email"); // Populate sender details
+    const moneyRequests = await MoneyRequest.find({ 
+      recipientId: userId  
+    }).populate("requesterId", "name email"); // Populate requester details
 
-    if (!transactions.length) {
-      return res.status(404).json({ message: "No money requests found" });
+
+    if (!moneyRequests.length) {
+      return res.status(404).json({ message: "No money requests found for this user" });
+
     }
 
     return res.status(200).json({ message: "Money requests retrieved", transactions });
@@ -112,5 +113,3 @@ export const approveMoneyRequest = async (req, res) => {
     return res.status(500).json({ message: "Failed to approve money request" });
   }
 };
-
-
