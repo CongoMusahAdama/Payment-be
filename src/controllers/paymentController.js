@@ -211,7 +211,9 @@ export const verifyOtp = async (req, res) => {
       return res.status(401).json({ message: "Unauthorized: User not found in request" });
     }
 
-    const { amount, otp } = req.body;
+    let { amount, otp } = req.body;
+    amount = Number(amount); // Ensure amount is a number
+
     if (!amount || amount <= 0 || !otp) {
       return res.status(400).json({ message: "Invalid verification request. Amount and OTP are required." });
     }
@@ -236,78 +238,88 @@ export const verifyOtp = async (req, res) => {
       return res.status(400).json({ message: "Insufficient funds or wallet not found" });
     }
 
-    // 🔥 **Retrieve the latest transfer_code for this user**
-    console.log("🔍 Retrieving latest transaction for user:", req.user.id); // Log user ID for debugging
-    console.log("🔍 Retrieving latest transaction for user:", req.user.id); // Log user ID for debugging
+    // 🔍 **Retrieve the latest pending withdrawal transaction**
+    console.log("🔍 Searching for pending withdrawal transaction with:", {
+      sender: req.user.id,
+      amount: amount,
+      transactionType: "withdrawal",
+      status: "otp"
+    });
+
     const latestTransaction = await Transaction.findOne({
       sender: req.user.id,
-      amount: Number(amount), // Ensure amount is a number for comparison
+      amount: amount, // Ensure comparison is numeric
       transactionType: "withdrawal",
-      status: "otp" // Only look for pending OTP withdrawals
-
+      status: "otp"
     }).sort({ createdAt: -1 });
 
-    // Log the fetched transaction for debugging
-    console.log("📌 Fetched Latest Transaction:", latestTransaction); // Log fetched transaction for debugging
-    console.log("🔍 Comparing amount:", Number(amount), "with transaction amount:", latestTransaction.amount); // Log amounts being compared
-
-
-    console.log("📌 Fetched Latest Transaction:", latestTransaction); // Log fetched transaction for debugging
-    if (!latestTransaction || latestTransaction.amount !== Number(amount) || !latestTransaction.transfer_code) {
-      console.error("🚨 No pending withdrawal found for this amount."); // Log error for debugging
-
+    if (!latestTransaction) {
+      console.error("🚨 No pending withdrawal found for this amount.");
       return res.status(400).json({ message: "No pending withdrawal found for this amount." });
     }
 
-    const transfer_code = latestTransaction.transfer_code; // Get stored transfer_code
+    console.log("📌 Fetched Latest Transaction:", latestTransaction);
 
+    // Ensure transfer_code exists
+    if (!latestTransaction.transfer_code) {
+      console.error("🚨 Transaction found, but transfer_code is missing.");
+      return res.status(400).json({ message: "Transaction record incomplete: No transfer code found." });
+    }
+
+    const transfer_code = latestTransaction.transfer_code;
     console.log("✅ Using stored transfer_code:", transfer_code, "for user:", req.user.id);
 
     // 🔥 **Step 1: Send OTP verification request to Paystack**
-    const response = await axios.post(
-      "https://api.paystack.co/transfer/finalize_transfer",
-      {
-        transfer_code,
-        otp
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-          "Content-Type": "application/json"
+    try {
+      const response = await axios.post(
+        "https://api.paystack.co/transfer/finalize_transfer",
+        {
+          transfer_code,
+          otp
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+            "Content-Type": "application/json"
+          }
         }
+      );
+
+      console.log("📌 Paystack Response:", response.data);
+
+      if (!response.data || response.data.status !== true) {
+        return res.status(400).json({
+          message: "OTP verification failed. Please check your OTP and try again.",
+          error: response.data.message || "Unknown error"
+        });
       }
-    );
 
-    console.log("📌 Paystack Response:", response.data);
+      // 🔥 **Step 2: Update transaction and wallet**
+      latestTransaction.status = "completed";
+      await latestTransaction.save();
 
-    if (!response.data || response.data.status !== true) {
-      return res.status(400).json({
-        message: "OTP verification failed. Please check your OTP and try again.",
-        error: response.data.message || "Unknown error"
+      wallet.balance -= amount;
+      await wallet.save();
+
+      await User.findByIdAndUpdate(req.user.id, { $push: { transactions: latestTransaction._id } });
+
+      return res.status(200).json({
+        message: "Withdrawal successful!",
+        transfer_code: response.data.data.transfer_code,
+        balance: wallet.balance,
+        transaction: latestTransaction
+      });
+
+    } catch (error) {
+      console.error("❌ OTP verification processing failed:", error.response?.data || error.message);
+      return res.status(500).json({
+        message: "OTP verification failed",
+        error: error.response?.data?.message || error.message
       });
     }
 
-    // 🔥 **Step 2: Update transaction and wallet**
-    latestTransaction.status = "completed";
-    await latestTransaction.save();
-
-    wallet.balance -= amount;
-    await wallet.save();
-
-    await User.findByIdAndUpdate(req.user.id, { $push: { transactions: latestTransaction._id } });
-
-    res.status(200).json({
-      message: "Withdrawal successful!",
-      transfer_code: response.data.data.transfer_code,
-      balance: wallet.balance,
-      transaction: latestTransaction
-    });
-
   } catch (error) {
-    console.error("❌ OTP verification processing failed:", error.message);
-    res.status(500).json({
-      message: "OTP verification failed",
-      error: error.response?.data?.message || error.message
-    });
+    console.error("❌ Internal Server Error:", error.message);
+    return res.status(500).json({ message: "Something went wrong", error: error.message });
   }
 };
