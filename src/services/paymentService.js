@@ -167,6 +167,13 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
       currency: "GHS",
       reason: "Withdrawal request",
     });
+    console.log("📤 Withdrawal request payload:", {
+
+      recipient: recipientCode,
+      amount: validAmount * 100,
+      currency: "GHS",
+      reason: "Withdrawal request",
+    });
 
     // Create a transaction record
     const transaction = new Transaction({
@@ -181,6 +188,8 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
 
     // Request a transfer
     const transferResponse = await axios.post(
+      `${PAYSTACK_BASE_URL}/transfer`,
+
       `${PAYSTACK_BASE_URL}/transfer`,
       {
         source: "balance",
@@ -208,6 +217,8 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
     await transaction.save();
 
     console.log("✅ Withdrawal initiated successfully:", transferResponse.data.data);
+    console.log("📌 Transfer Code:", transferCode); // Log the transfer_code for debugging
+
     return transferResponse.data.data;
   } catch (error) {
     console.error("🚨 Error initiating withdrawal:", error.response?.data || error.message);
