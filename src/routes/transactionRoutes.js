@@ -1,5 +1,5 @@
 import express from "express";
-import { transferFunds, requestMoney, getTransactionHistory, fetchAllMoneyRequests, approveMoneyRequest } from "../controllers/transactionController.js";
+import { transferFunds, requestMoney, getTransactionHistory, fetchAllMoneyRequests, approveMoneyRequest, } from "../controllers/transactionController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -130,6 +130,8 @@ router.get("/history", authMiddleware, getTransactionHistory);
  */
 router.get("/requests", authMiddleware, fetchAllMoneyRequests);
 
+
+
 /**
  * @swagger
  * /api/transactions/approve/{requestId}:
@@ -182,4 +184,3 @@ router.get("/requests", authMiddleware, fetchAllMoneyRequests);
 router.put("/approve/:requestId", authMiddleware, approveMoneyRequest);
 
 export default router;
-

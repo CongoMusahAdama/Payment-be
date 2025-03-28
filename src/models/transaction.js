@@ -26,7 +26,13 @@ const transactionSchema = new mongoose.Schema({
         default: "pending" 
     },
 
+    transfer_code: {
+        type: String,
+        required: true,
+    },
     reference: {
+
+
         type: String,
         unique: true,
         required: true

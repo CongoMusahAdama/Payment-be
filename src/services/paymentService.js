@@ -152,6 +152,7 @@ export const handleWebhookUpdated = async (req, res) => {
   res.status(200).send("Webhook received");
 };
 
+
 // Initiate withdrawal
 export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
   try {

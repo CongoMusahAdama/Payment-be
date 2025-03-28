@@ -59,25 +59,20 @@ export const getTransactionHistory = async (req, res) => {
   }
 };
 
-/**
- * Fetch All Money Requests
- */
 export const fetchAllMoneyRequests = async (req, res) => {
   try {
-    const userId = req.user._id; // Authenticated user ID
-    console.log("🔍 Fetching money requests for User ID:", userId);
+    const recipientCode = req.user.recipientCode; // Ensure this matches the stored field
 
-    // Convert userId to ObjectId
-    const objectIdUserId = new mongoose.Types.ObjectId(userId);
+    console.log("🔍 Fetching money requests for recipientCode:", recipientCode);
 
-    // Find money requests where the user is the recipient
+    // Fetch money requests where the user is the recipient
     const moneyRequests = await MoneyRequest.find({
-      recipientId: objectIdUserId, // Compare with ObjectId
+      recipientCode: recipientCode, // Use recipientCode instead of recipientId
     }).populate("requesterId", "name email"); // Populate requester details
 
     console.log("📌 Money Requests Found:", moneyRequests);
 
-    if (!moneyRequests || moneyRequests.length === 0) {
+    if (!moneyRequests.length) {
       console.warn("⚠️ No money requests found for this user.");
       return res.status(404).json({ message: "No money requests found for this user" });
     }
@@ -88,6 +83,7 @@ export const fetchAllMoneyRequests = async (req, res) => {
     return res.status(500).json({ message: "Failed to fetch money requests", error: error.message });
   }
 };
+
 
 /**
  * Approve Money Request

@@ -261,7 +261,7 @@ export const verifyOtp = async (req, res) => {
     console.log("📌 Fetched Latest Transaction:", latestTransaction);
 
     // Ensure transfer_code exists
-    if (!latestTransaction.transfer_code) {
+    if (!latestTransaction.transfer_code || latestTransaction.transfer_code === '') {
       console.error("🚨 Transaction found, but transfer_code is missing.");
       return res.status(400).json({ message: "Transaction record incomplete: No transfer code found." });
     }
