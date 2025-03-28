@@ -14,10 +14,9 @@ const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = [
       "http://localhost:5173", // Local frontend
-      "https://67e65fa0167728d915b7736c--kaleidoscopic-entremet-145d98.netlify.app",  // Netlify frontend
+      "https://67e665a8245a5b0008886f86--kaleidoscopic-entremet-145d98.netlify.app",  // Updated Netlify frontend
       "https://payment-be-3tc2.onrender.com"
     ];
-
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
