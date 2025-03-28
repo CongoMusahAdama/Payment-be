@@ -10,8 +10,22 @@ The Money Transfer App is a secure platform that enables users to send and recei
 - Comprehensive API documentation using Swagger.
 - Profile management
 - Money transfer operations
-- Payment withdrawal operations
 - Transaction history and reporting
+
+# Payment Integration & OTP Handling
+This project integrates Paystack for payments, as it supports both card payments and mobile money transfers. Currently, the system is running in test mode, meaning:
+
+- All transactions are simulated and do not involve real money.
+
+- OTP for withdrawals and MFA verification will be received only by the account owner (me) due to Paystack's test mode limitations.
+
+- For email-based MFA, we are using Brevo. Similar to Paystack, MFA email verification is currently configured to send OTPs to the admin account.
+
+ *For now*, any withdrawal or payment made in the system is purely for testing purposes due to project timeline and document requiremnent.
+
+ -  Once we move to live mode, OTPs will be sent directly to the users.
+
+
 
 # Tech Stack
 - Node.js: JavaScript runtime for building server-side applications.
