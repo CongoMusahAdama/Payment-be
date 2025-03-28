@@ -254,8 +254,8 @@ export const verifyOtp = async (req, res) => {
 
     console.log("📌 Fetched Latest Transaction:", latestTransaction); // Log fetched transaction for debugging
     if (!latestTransaction || latestTransaction.amount !== Number(amount) || !latestTransaction.transfer_code) {
-
       console.error("🚨 No pending withdrawal found for this amount."); // Log error for debugging
+
       return res.status(400).json({ message: "No pending withdrawal found for this amount." });
     }
 

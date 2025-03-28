@@ -67,12 +67,16 @@ export const fetchAllMoneyRequests = async (req, res) => {
     const userId = req.user._id; // Authenticated user ID
 
     // Fetch money requests where the user is the recipient
-    const moneyRequests = await MoneyRequest.find({ 
+    console.log("User ID:", userId);
+    const moneyRequests = await MoneyRequest.find({
+
       recipientId: userId  
     }).populate("requesterId", "name email"); // Populate requester details
 
 
+    console.log("Money Requests:", moneyRequests);
     if (!moneyRequests.length) {
+
       return res.status(404).json({ message: "No money requests found for this user" });
 
     }
