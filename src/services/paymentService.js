@@ -152,7 +152,6 @@ export const handleWebhookUpdated = async (req, res) => {
   res.status(200).send("Webhook received");
 };
 
-
 // Initiate withdrawal
 export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
   try {
@@ -167,15 +166,8 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
       currency: "GHS",
       reason: "Withdrawal request",
     });
-    console.log("📤 Withdrawal request payload:", {
 
-      recipient: recipientCode,
-      amount: validAmount * 100,
-      currency: "GHS",
-      reason: "Withdrawal request",
-    });
-
-    // Create a transaction record
+    // ✅ Create a transaction record BEFORE making the Paystack request
     const transaction = new Transaction({
       sender: user._id,
       recipient: recipientCode,
@@ -184,12 +176,11 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
       status: "otp",
       reference: `TXN-${Date.now()}`,
     });
-    await transaction.save();
 
-    // Request a transfer
+    await transaction.save(); // Save the transaction
+
+    // ✅ Send withdrawal request to Paystack
     const transferResponse = await axios.post(
-      `${PAYSTACK_BASE_URL}/transfer`,
-
       `${PAYSTACK_BASE_URL}/transfer`,
       {
         source: "balance",
@@ -201,23 +192,23 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
       {
         headers: {
           Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+          "Content-Type": "application/json",
         },
       }
     );
 
-    if (!transferResponse.data || !transferResponse.data.status) {
-      throw new Error(
-        transferResponse.data.message || "Failed to initiate withdrawal"
-      );
+    // ✅ Validate Paystack response
+    if (!transferResponse.data || !transferResponse.data.data || !transferResponse.data.data.transfer_code) {
+      console.error("❌ No transfer_code received from Paystack:", transferResponse.data);
+      throw new Error("Paystack transfer failed: No transfer_code returned.");
     }
 
-    // Capture and store the transfer_code
-    const transferCode = transferResponse.data.data.transfer_code;
-    transaction.transfer_code = transferCode;
+    // ✅ Assign transfer_code to transaction & save it
+    transaction.transfer_code = transferResponse.data.data.transfer_code;
     await transaction.save();
 
     console.log("✅ Withdrawal initiated successfully:", transferResponse.data.data);
-    console.log("📌 Transfer Code:", transferCode); // Log the transfer_code for debugging
+    console.log("📌 Transfer Code:", transaction.transfer_code);
 
     return transferResponse.data.data;
   } catch (error) {
