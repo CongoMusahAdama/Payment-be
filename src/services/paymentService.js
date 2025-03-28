@@ -152,7 +152,7 @@ export const handleWebhookUpdated = async (req, res) => {
   res.status(200).send("Webhook received");
 };
 
-// Initiate withdrawal
+
 export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
   try {
     const validAmount = Number(amount);
@@ -167,7 +167,7 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
       reason: "Withdrawal request",
     });
 
-    // ✅ Create a transaction record BEFORE making the Paystack request
+    // ✅ DO NOT save transaction yet
     const transaction = new Transaction({
       sender: user._id,
       recipient: recipientCode,
@@ -177,9 +177,7 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
       reference: `TXN-${Date.now()}`,
     });
 
-    await transaction.save(); // Save the transaction
-
-    // ✅ Send withdrawal request to Paystack
+    // ✅ Call Paystack API
     const transferResponse = await axios.post(
       `${PAYSTACK_BASE_URL}/transfer`,
       {
@@ -197,15 +195,15 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
       }
     );
 
-    // ✅ Validate Paystack response
-    if (!transferResponse.data || !transferResponse.data.data || !transferResponse.data.data.transfer_code) {
+    // ✅ Validate response
+    if (!transferResponse.data?.data?.transfer_code) {
       console.error("❌ No transfer_code received from Paystack:", transferResponse.data);
       throw new Error("Paystack transfer failed: No transfer_code returned.");
     }
 
-    // ✅ Assign transfer_code to transaction & save it
+    // ✅ Assign transfer_code & THEN save transaction
     transaction.transfer_code = transferResponse.data.data.transfer_code;
-    await transaction.save();
+    await transaction.save(); // Save transaction after getting transfer_code
 
     console.log("✅ Withdrawal initiated successfully:", transferResponse.data.data);
     console.log("📌 Transfer Code:", transaction.transfer_code);
@@ -216,3 +214,5 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
     throw new Error(error.response?.data?.message || "Withdrawal initiation failed");
   }
 };
+
+

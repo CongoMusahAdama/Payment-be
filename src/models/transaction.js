@@ -25,12 +25,11 @@ const transactionSchema = new mongoose.Schema({
         enum: ["pending", "completed", "failed", "otp"], 
         default: "pending" 
     },
-        transfer_code: {
-            type: String,
-            required: function () {
-              return this.transactionType === "withdrawal"; // Only required for withdrawals
-            },
-          },
+    transfer_code: { 
+        type: String, 
+        required: false,
+     },
+
           
     reference: {
 
