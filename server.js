@@ -10,31 +10,38 @@ import reportRoutes from "./src/routes/reportRoutes.js";
 
 const app = express();
 
-// Fix CORS to allow Frontend & Public API Access
-const allowedOrigins = [
-    "http://localhost:5173", // Local frontend (during development)
-    "https://67e65fa0167728d915b7736c--kaleidoscopic-entremet-145d98.netlify.app", // Netlify frontend URL
-    "https://payment-be-3tc2.onrender.com" // Backend URL (Render)
-];
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      "http://localhost:5173", // Local frontend
+      "https://67e65fa0167728d915b7736c--kaleidoscopic-entremet-145d98.netlify.app",  // Netlify frontend
+      "https://payment-be-3tc2.onrender.com"
+    ];
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.log("Blocked by CORS:", origin); // Debugging
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow OPTIONS
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true, // Allow credentials like cookies or auth headers
-  })
-);
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log("❌ Blocked by CORS:", origin);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], 
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true, // Allows cookies and auth headers
+};
 
-// Ensure preflight requests are handled
-app.options("*", cors());
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Explicitly handle preflight requests
+app.options("*", (req, res) => {
+  res.header("Access-Control-Allow-Origin", req.headers.origin);
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.sendStatus(200);
+});
+
 
 // Connect to the database
 connectDB();
