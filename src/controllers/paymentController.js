@@ -130,6 +130,7 @@ export const getUserBalance = async (req, res) => {
   }
 };
 
+//requestOtp
 export const requestOtp = async (req, res) => {
   try {
     console.log("🔍 Received OTP request from:", req.user);
@@ -143,7 +144,6 @@ export const requestOtp = async (req, res) => {
       return res.status(400).json({ message: "Invalid withdrawal amount." });
     }
 
-    // Check if user exists
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ message: "User not found in database" });
@@ -151,48 +151,29 @@ export const requestOtp = async (req, res) => {
 
     console.log("✅ User verified:", user);
 
-    // Ensure user has a recipientCode
     let recipientCode = user.recipientCode;
     if (!recipientCode) {
-      console.log("🔍 No recipientCode found, creating a new one...");
-      recipientCode = await createPaystackRecipient(user);
-      user.recipientCode = recipientCode;
-      await user.save();
+      return res.status(400).json({ message: "Recipient code is missing" });
     }
 
-    console.log("✅ Using recipientCode:", recipientCode);
-
-    // Find user's wallet
     const wallet = await Wallet.findOne({ user: req.user.id });
     if (!wallet || wallet.balance < amount) {
       return res.status(400).json({ message: "Insufficient funds or wallet not found" });
     }
 
-    // Initiate withdrawal without OTP
     console.log("📤 Initiating withdrawal request...");
     const withdrawalResponse = await initiateWithdrawal(req.user, recipientCode, amount, null);
+
     if (!withdrawalResponse || !withdrawalResponse.transfer_code) {
       console.error("❌ No transfer_code received from Paystack:", withdrawalResponse);
       return res.status(500).json({ message: "Failed to initiate withdrawal. Try again later." });
     }
-
-    // ✅ FIX: Include recipientCode in the transaction
-    const transaction = new Transaction({
-      sender: req.user.id,
-      recipient: recipientCode, // ✅ Add this line
-      amount,
-      transactionType: "withdrawal",
-      status: "otp",
-      reference: withdrawalResponse.reference
-    });
-    await transaction.save();
 
     return res.status(202).json({
       message: "OTP sent. Please verify your Paystack OTP.",
       reference: withdrawalResponse.reference,
       transfer_code: withdrawalResponse.transfer_code,
     });
-
   } catch (error) {
     console.error("❌ OTP request processing failed:", error.message);
     res.status(500).json({ message: "OTP request failed", error: error.message });

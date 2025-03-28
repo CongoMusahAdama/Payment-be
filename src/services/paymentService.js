@@ -163,58 +163,52 @@ export const initiateWithdrawal = async (user, recipientCode, amount, otp) => {
 
     console.log("📤 Sending withdrawal request to Paystack:", {
       recipient: recipientCode,
-      amount: validAmount * 100, // Convert to kobo
-      currency: "GHS", 
+      amount: validAmount * 100,
+      currency: "GHS",
       reason: "Withdrawal request",
-      ...(otp && { otp }), // Include OTP if provided
     });
 
-    // Create a transaction record for the withdrawal
+    // Create a transaction record
     const transaction = new Transaction({
       sender: user._id,
       recipient: recipientCode,
       amount: validAmount,
       transactionType: "withdrawal",
-      status: "otp", // Set status to otp for verification
+      status: "otp",
       reference: `TXN-${Date.now()}`,
     });
+    await transaction.save();
 
-    await transaction.save(); // Save the transaction before proceeding
-    console.log("✅ Transaction created successfully:", transaction); // Log transaction details
-
-    const response = await axios.post(`${PAYSTACK_BASE_URL}/transfer`, {
-      recipient: recipientCode,
-      amount: validAmount * 100, 
-      currency: "GHS", 
-      reason: "Withdrawal request",
-      ...(otp && { otp }),
-    }, {
-      headers: {
-        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+    // Request a transfer
+    const transferResponse = await axios.post(
+      `${PAYSTACK_BASE_URL}/transfer`,
+      {
+        source: "balance",
+        recipient: recipientCode,
+        amount: validAmount * 100,
+        currency: "GHS",
+        reason: "Withdrawal request",
       },
-    });
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        },
+      }
+    );
 
-    // Log the withdrawal request payload for debugging
-    console.log("📤 Withdrawal request payload:", {
-      recipient: recipientCode,
-      amount: validAmount * 100, 
-      currency: "GHS", 
-      reason: "Withdrawal request",
-      ...(otp && { otp }),
-    });
-
-    if (!response.data || response.data.status !== true) {
-      console.error("❌ Paystack API Response Error:", response.data);
-      throw new Error(response.data.message || "Failed to initiate withdrawal");
+    if (!transferResponse.data || !transferResponse.data.status) {
+      throw new Error(
+        transferResponse.data.message || "Failed to initiate withdrawal"
+      );
     }
 
-    // Store transfer_code in the transaction
-    transaction.transfer_code = response.data.data.transfer_code; // Ensure transfer_code is stored
-    await transaction.save(); // Save the transaction with transfer_code
+    // Capture and store the transfer_code
+    const transferCode = transferResponse.data.data.transfer_code;
+    transaction.transfer_code = transferCode;
+    await transaction.save();
 
-    console.log("✅ Withdrawal initiated successfully:", response.data.data);
-    return response.data.data;
-
+    console.log("✅ Withdrawal initiated successfully:", transferResponse.data.data);
+    return transferResponse.data.data;
   } catch (error) {
     console.error("🚨 Error initiating withdrawal:", error.response?.data || error.message);
     throw new Error(error.response?.data?.message || "Withdrawal initiation failed");
