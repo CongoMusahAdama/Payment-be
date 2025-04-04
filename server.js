@@ -14,8 +14,10 @@ const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = [
       "http://localhost:5173", // Local frontend
-      "https://67e665a8245a5b0008886f86--kaleidoscopic-entremet-145d98.netlify.app",  // Updated Netlify frontend
-      "https://payment-be-3tc2.onrender.com"
+      "http://localhost:5000", // Local backend
+      "https://67e665a8245a5b0008886f86--kaleidoscopic-entremet-145d98.netlify.app",  // Netlify frontend
+      "https://payment-be-3tc2.onrender.com", // Backend on Render
+      null // Allow mobile browsers or Postman requests
     ];
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
@@ -24,10 +26,11 @@ const corsOptions = {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], 
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true, // Allows cookies and auth headers
 };
+
 
 // Apply CORS middleware
 app.use(cors(corsOptions));
