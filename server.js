@@ -15,7 +15,7 @@ const corsOptions = {
     const allowedOrigins = [
       "http://localhost:5173", // Local frontend
       "http://localhost:5000", // Local backend
-      "https://67e665a8245a5b0008886f86--kaleidoscopic-entremet-145d98.netlify.app",  // Netlify frontend
+      "https://kaleidoscopic-entremet-145d98.netlify.app",  // Netlify frontend
       "https://payment-be-3tc2.onrender.com", // Backend on Render
       null // Allow mobile browsers or Postman requests
     ];
